@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'pages/home_page.dart';
 import 'state/quiz_state.dart';
+import 'theme/app_theme.dart';
 
 void main() {
   runApp(const MyApp());
@@ -40,26 +41,11 @@ class _MyAppState extends State<MyApp> {
       toggleTheme: _toggleTheme,
       themeMode: _themeMode,
       child: MaterialApp(
-        title: 'Qu izify - Interactive Quiz App',
+        title: 'Quizify - Interactive Quiz App',
         debugShowCheckedModeBanner: false,
         themeMode: _themeMode,
-        // Tema terang
-        theme: ThemeData(
-          colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
-          useMaterial3: true,
-          fontFamily: 'Poppins',
-          scaffoldBackgroundColor: Colors.white,
-        ),
-        // Tema gelap — akan dilengkapi di commit 22
-        darkTheme: ThemeData(
-          colorScheme: ColorScheme.fromSeed(
-            seedColor: Colors.deepPurple,
-            brightness: Brightness.dark,
-          ),
-          useMaterial3: true,
-          fontFamily: 'Poppins',
-          scaffoldBackgroundColor: const Color(0xFF1A1A2E),
-        ),
+        theme: AppTheme.lightTheme,
+        darkTheme: AppTheme.darkTheme,
         home: const HomePage(),
       ),
     );

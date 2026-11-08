@@ -102,9 +102,10 @@ class _HomePageState extends State<HomePage> {
   Widget build(BuildContext context) {
     // Mendapatkan ukuran layar untuk responsive design
     final size = MediaQuery.of(context).size;
+    final provider = QuizStateProvider.of(context);
+    final isDark = provider.themeMode == ThemeMode.dark;
     
     return Scaffold(
-      backgroundColor: Colors.white,
       body: SafeArea(
         child: SingleChildScrollView(
           child: Padding(
@@ -112,20 +113,68 @@ class _HomePageState extends State<HomePage> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
-                SizedBox(height: size.height * 0.08),
+                // Theme Toggle Switch di pojok kanan
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.end,
+                  children: [
+                    Container(
+                      margin: const EdgeInsets.only(top: 16),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 12,
+                        vertical: 6,
+                      ),
+                      decoration: BoxDecoration(
+                        color: Theme.of(context).colorScheme.primary.withOpacity(0.1),
+                        borderRadius: BorderRadius.circular(20),
+                        border: Border.all(
+                          color: Theme.of(context).colorScheme.primary.withOpacity(0.3),
+                        ),
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(
+                            Icons.wb_sunny_outlined,
+                            size: 18,
+                            color: isDark
+                                ? Theme.of(context).colorScheme.onSurface.withOpacity(0.5)
+                                : Theme.of(context).colorScheme.primary,
+                          ),
+                          const SizedBox(width: 6),
+                          Switch(
+                            value: isDark,
+                            onChanged: (_) => provider.toggleTheme(),
+                            activeColor: Theme.of(context).colorScheme.primary,
+                            materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                          ),
+                          const SizedBox(width: 6),
+                          Icon(
+                            Icons.nightlight_outlined,
+                            size: 18,
+                            color: isDark
+                                ? Theme.of(context).colorScheme.primary
+                                : Theme.of(context).colorScheme.onSurface.withOpacity(0.5),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+                
+                SizedBox(height: size.height * 0.04),
                 
                 // Logo/Icon Quiz
                 Container(
                   width: 120,
                   height: 120,
                   decoration: BoxDecoration(
-                    color: Colors.deepPurple.shade50,
+                    color: Theme.of(context).colorScheme.primary.withOpacity(0.1),
                     shape: BoxShape.circle,
                   ),
                   child: Icon(
                     Icons.quiz_outlined,
                     size: 60,
-                    color: Colors.deepPurple,
+                    color: Theme.of(context).colorScheme.primary,
                   ),
                 ),
                 
@@ -138,7 +187,7 @@ class _HomePageState extends State<HomePage> {
                     fontFamily: 'Poppins',
                     fontSize: 42,
                     fontWeight: FontWeight.bold,
-                    color: Colors.deepPurple,
+                    color: Theme.of(context).colorScheme.primary,
                     letterSpacing: 1.2,
                   ),
                 ),
@@ -152,7 +201,7 @@ class _HomePageState extends State<HomePage> {
                     fontFamily: 'Poppins',
                     fontSize: 16,
                     fontWeight: FontWeight.w400,
-                    color: Colors.grey.shade600,
+                    color: Theme.of(context).colorScheme.onSurface.withOpacity(0.7),
                     letterSpacing: 0.5,
                   ),
                 ),
@@ -163,7 +212,7 @@ class _HomePageState extends State<HomePage> {
                 Container(
                   padding: const EdgeInsets.all(20),
                   decoration: BoxDecoration(
-                    color: Colors.deepPurple.shade50,
+                    color: Theme.of(context).colorScheme.primary.withOpacity(0.1),
                     borderRadius: BorderRadius.circular(16),
                   ),
                   child: Column(
@@ -180,7 +229,7 @@ class _HomePageState extends State<HomePage> {
                           fontFamily: 'Poppins',
                           fontSize: 22,
                           fontWeight: FontWeight.w600,
-                          color: Colors.deepPurple.shade700,
+                          color: Theme.of(context).colorScheme.primary,
                         ),
                       ),
                       const SizedBox(height: 8),
@@ -191,7 +240,7 @@ class _HomePageState extends State<HomePage> {
                           fontFamily: 'Poppins',
                           fontSize: 14,
                           fontWeight: FontWeight.w400,
-                          color: Colors.grey.shade700,
+                          color: Theme.of(context).colorScheme.onSurface.withOpacity(0.8),
                           height: 1.5,
                         ),
                       ),
@@ -207,7 +256,7 @@ class _HomePageState extends State<HomePage> {
                   children: [
                     Icon(
                       Icons.help_outline,
-                      color: Colors.deepPurple,
+                      color: Theme.of(context).colorScheme.primary,
                       size: 20,
                     ),
                     const SizedBox(width: 8),
@@ -217,13 +266,13 @@ class _HomePageState extends State<HomePage> {
                         fontFamily: 'Poppins',
                         fontSize: 16,
                         fontWeight: FontWeight.w500,
-                        color: Colors.grey.shade700,
+                        color: Theme.of(context).colorScheme.onSurface.withOpacity(0.8),
                       ),
                     ),
                     const SizedBox(width: 16),
                     Icon(
                       Icons.timer_outlined,
-                      color: Colors.deepPurple,
+                      color: Theme.of(context).colorScheme.primary,
                       size: 20,
                     ),
                     const SizedBox(width: 8),
@@ -233,7 +282,7 @@ class _HomePageState extends State<HomePage> {
                         fontFamily: 'Poppins',
                         fontSize: 16,
                         fontWeight: FontWeight.w500,
-                        color: Colors.grey.shade700,
+                        color: Theme.of(context).colorScheme.onSurface.withOpacity(0.8),
                       ),
                     ),
                   ],
@@ -253,7 +302,7 @@ class _HomePageState extends State<HomePage> {
                           fontFamily: 'Poppins',
                           fontSize: 16,
                           fontWeight: FontWeight.w600,
-                          color: Colors.grey.shade800,
+                          color: Theme.of(context).colorScheme.onSurface,
                         ),
                       ),
                     ),
@@ -273,13 +322,13 @@ class _HomePageState extends State<HomePage> {
                           fontFamily: 'Poppins',
                           fontSize: 14,
                           fontWeight: FontWeight.w400,
-                          color: Colors.grey.shade400,
+                          color: Theme.of(context).colorScheme.onSurface.withOpacity(0.4),
                         ),
                         prefixIcon: Icon(
                           Icons.person_outline,
                           color: _nameError != null
-                              ? Colors.red
-                              : Colors.deepPurple,
+                              ? Theme.of(context).colorScheme.error
+                              : Theme.of(context).colorScheme.primary,
                         ),
                         // Menampilkan pesan error di bawah TextField
                         errorText: _nameError,
@@ -288,57 +337,12 @@ class _HomePageState extends State<HomePage> {
                           fontSize: 12,
                           fontWeight: FontWeight.w400,
                         ),
-                        filled: true,
-                        fillColor: Colors.grey.shade50,
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(12),
-                          borderSide: BorderSide(
-                            color: Colors.grey.shade300,
-                            width: 1.5,
-                          ),
-                        ),
-                        enabledBorder: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(12),
-                          borderSide: BorderSide(
-                            color: _nameError != null
-                                ? Colors.red
-                                : Colors.grey.shade300,
-                            width: 1.5,
-                          ),
-                        ),
-                        focusedBorder: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(12),
-                          borderSide: BorderSide(
-                            color: _nameError != null
-                                ? Colors.red
-                                : Colors.deepPurple,
-                            width: 2,
-                          ),
-                        ),
-                        errorBorder: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(12),
-                          borderSide: const BorderSide(
-                            color: Colors.red,
-                            width: 1.5,
-                          ),
-                        ),
-                        focusedErrorBorder: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(12),
-                          borderSide: const BorderSide(
-                            color: Colors.red,
-                            width: 2,
-                          ),
-                        ),
-                        contentPadding: const EdgeInsets.symmetric(
-                          horizontal: 16,
-                          vertical: 16,
-                        ),
                       ),
                       style: TextStyle(
                         fontFamily: 'Poppins',
                         fontSize: 16,
                         fontWeight: FontWeight.w500,
-                        color: Colors.grey.shade800,
+                        color: Theme.of(context).colorScheme.onSurface,
                       ),
                       textCapitalization: TextCapitalization.words,
                       keyboardType: TextInputType.name,

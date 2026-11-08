@@ -309,8 +309,8 @@ class _QuizPageState extends State<QuizPage> {
         return false; // Mencegah pop otomatis
       },
       child: Scaffold(
-      appBar: _buildAppBar(quizState),
-      body: SafeArea(
+        appBar: _buildAppBar(quizState),
+        body: SafeArea(
         child: Column(
           children: [
             _buildHeader(quizState),
@@ -364,21 +364,22 @@ class _QuizPageState extends State<QuizPage> {
           ],
         ),
       ),
-    ); // Scaffold
-  } // WillPopScope
+      ), // Scaffold
+    ); // WillPopScope
+  }
 
   // ─── Widget Builders ───────────────────────────────────────────
 
   PreferredSizeWidget _buildAppBar(QuizState quizState) {
     return AppBar(
-      backgroundColor: Colors.white,
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       elevation: 0,
       automaticallyImplyLeading: false,
       title: Row(
         children: [
           CircleAvatar(
             radius: 18,
-            backgroundColor: Colors.deepPurple.shade100,
+            backgroundColor: Theme.of(context).colorScheme.primary.withOpacity(0.1),
             child: Text(
               widget.username.isNotEmpty
                   ? widget.username[0].toUpperCase()
@@ -387,7 +388,7 @@ class _QuizPageState extends State<QuizPage> {
                 fontFamily: 'Poppins',
                 fontSize: 16,
                 fontWeight: FontWeight.bold,
-                color: Colors.deepPurple,
+                color: Theme.of(context).colorScheme.primary,
               ),
             ),
           ),
@@ -403,7 +404,7 @@ class _QuizPageState extends State<QuizPage> {
                     fontFamily: 'Poppins',
                     fontSize: 15,
                     fontWeight: FontWeight.w600,
-                    color: Colors.grey.shade800,
+                    color: Theme.of(context).colorScheme.onSurface,
                   ),
                 ),
                 Text(
@@ -411,7 +412,7 @@ class _QuizPageState extends State<QuizPage> {
                   style: TextStyle(
                     fontFamily: 'Poppins',
                     fontSize: 11,
-                    color: Colors.grey.shade500,
+                    color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6),
                   ),
                 ),
               ],
@@ -423,7 +424,7 @@ class _QuizPageState extends State<QuizPage> {
         // Tombol keluar dengan konfirmasi
         IconButton(
           onPressed: _showExitConfirmationDialog,
-          icon: Icon(Icons.close, color: Colors.grey.shade600),
+          icon: Icon(Icons.close, color: Theme.of(context).colorScheme.onSurface.withOpacity(0.7)),
           tooltip: 'Keluar',
         ),
       ],
@@ -439,10 +440,10 @@ class _QuizPageState extends State<QuizPage> {
     return Container(
       padding: const EdgeInsets.fromLTRB(20, 10, 20, 16),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: Theme.of(context).scaffoldBackgroundColor,
         boxShadow: [
           BoxShadow(
-            color: Colors.grey.shade100,
+            color: Theme.of(context).shadowColor.withOpacity(0.1),
             blurRadius: 6,
             offset: const Offset(0, 2),
           ),
@@ -461,16 +462,16 @@ class _QuizPageState extends State<QuizPage> {
                       style: TextStyle(
                         fontFamily: 'Poppins',
                         fontSize: 14,
-                        color: Colors.grey.shade600,
+                        color: Theme.of(context).colorScheme.onSurface.withOpacity(0.7),
                       ),
                     ),
                     TextSpan(
                       text: '${quizState.currentIndex + 1}',
-                      style: const TextStyle(
+                      style: TextStyle(
                         fontFamily: 'Poppins',
                         fontSize: 18,
                         fontWeight: FontWeight.bold,
-                        color: Colors.deepPurple,
+                        color: Theme.of(context).colorScheme.primary,
                       ),
                     ),
                     TextSpan(
@@ -478,7 +479,7 @@ class _QuizPageState extends State<QuizPage> {
                       style: TextStyle(
                         fontFamily: 'Poppins',
                         fontSize: 14,
-                        color: Colors.grey.shade500,
+                        color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6),
                       ),
                     ),
                   ],
@@ -488,7 +489,7 @@ class _QuizPageState extends State<QuizPage> {
                 padding: const EdgeInsets.symmetric(
                     horizontal: 12, vertical: 5),
                 decoration: BoxDecoration(
-                  color: Colors.deepPurple,
+                  color: Theme.of(context).colorScheme.primary,
                   borderRadius: BorderRadius.circular(20),
                 ),
                 child: Text(
@@ -513,9 +514,9 @@ class _QuizPageState extends State<QuizPage> {
               child: LinearProgressIndicator(
                 value: value,
                 minHeight: 8,
-                backgroundColor: Colors.grey.shade200,
-                valueColor: const AlwaysStoppedAnimation<Color>(
-                    Colors.deepPurple),
+                backgroundColor: Theme.of(context).colorScheme.surfaceVariant,
+                valueColor: AlwaysStoppedAnimation<Color>(
+                    Theme.of(context).colorScheme.primary),
               ),
             ),
           ),

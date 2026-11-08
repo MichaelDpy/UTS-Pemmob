@@ -44,18 +44,18 @@ class ReviewPage extends StatelessWidget {
 
   PreferredSizeWidget _buildAppBar(BuildContext context, QuizState quizState) {
     return AppBar(
-      backgroundColor: Colors.white,
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       elevation: 0,
       title: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text(
+          Text(
             'Review Jawaban',
             style: TextStyle(
               fontFamily: 'Poppins',
               fontWeight: FontWeight.w600,
               fontSize: 18,
-              color: Colors.deepPurple,
+              color: Theme.of(context).colorScheme.primary,
             ),
           ),
           Text(
@@ -63,13 +63,13 @@ class ReviewPage extends StatelessWidget {
             style: TextStyle(
               fontFamily: 'Poppins',
               fontSize: 11,
-              color: Colors.grey.shade600,
+              color: Theme.of(context).colorScheme.onSurface.withOpacity(0.7),
             ),
           ),
         ],
       ),
       leading: IconButton(
-        icon: const Icon(Icons.arrow_back_ios, color: Colors.deepPurple),
+        icon: Icon(Icons.arrow_back_ios, color: Theme.of(context).colorScheme.primary),
         onPressed: () => Navigator.pop(context),
       ),
     );
@@ -89,11 +89,11 @@ class ReviewPage extends StatelessWidget {
     return Container(
       margin: EdgeInsets.only(bottom: ResponsiveHelper.spacing(context)),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: Theme.of(context).cardColor,
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
-            color: Colors.grey.shade200,
+            color: Theme.of(context).shadowColor.withOpacity(0.1),
             blurRadius: 8,
             offset: const Offset(0, 2),
           ),
@@ -114,7 +114,7 @@ class ReviewPage extends StatelessWidget {
                 fontFamily: 'Poppins',
                 fontSize: 16,
                 fontWeight: FontWeight.w600,
-                color: Colors.grey.shade800,
+                color: Theme.of(context).colorScheme.onSurface,
                 height: 1.5,
               ),
             ),

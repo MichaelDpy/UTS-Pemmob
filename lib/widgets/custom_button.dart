@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../utils/animations.dart';
 
 /// Widget tombol kustom yang digunakan di seluruh aplikasi Quizify.
 /// Mendukung dua tipe: primary (solid) dan secondary (outline).
@@ -30,42 +31,45 @@ class CustomButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // Gunakan warna dari parameter, atau fallback ke deepPurple
-    final buttonColor = color ?? Colors.deepPurple;
+    // Gunakan warna dari parameter, atau fallback ke primary color dari theme
+    final buttonColor = color ?? Theme.of(context).colorScheme.primary;
 
     // Tampilkan tombol sesuai tipe
     if (type == ButtonType.secondary) {
-      return _buildSecondaryButton(buttonColor);
+      return _buildSecondaryButton(buttonColor, context);
     }
-    return _buildPrimaryButton(buttonColor);
+    return _buildPrimaryButton(buttonColor, context);
   }
 
   /// Tombol solid (Primary) — background berwarna, teks putih
-  Widget _buildPrimaryButton(Color buttonColor) {
-    return SizedBox(
-      width: double.infinity,
-      height: 56,
-      child: ElevatedButton(
-        onPressed: onPressed,
-        style: ElevatedButton.styleFrom(
-          backgroundColor: buttonColor,
-          foregroundColor: Colors.white,
-          // Nonaktif jika onPressed null
-          disabledBackgroundColor: Colors.grey.shade300,
-          disabledForegroundColor: Colors.grey.shade500,
-          elevation: onPressed != null ? 2 : 0,
-          shadowColor: buttonColor.withOpacity(0.3),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(12),
+  Widget _buildPrimaryButton(Color buttonColor, BuildContext context) {
+    return AppAnimations.pressAnimation(
+      onPressed: onPressed ?? () {},
+      child: SizedBox(
+        width: double.infinity,
+        height: 56,
+        child: ElevatedButton(
+          onPressed: onPressed,
+          style: ElevatedButton.styleFrom(
+            backgroundColor: buttonColor,
+            foregroundColor: Theme.of(context).colorScheme.onPrimary,
+            // Nonaktif jika onPressed null
+            disabledBackgroundColor: Theme.of(context).disabledColor,
+            disabledForegroundColor: Theme.of(context).colorScheme.onSurface.withOpacity(0.4),
+            elevation: onPressed != null ? 2 : 0,
+            shadowColor: buttonColor.withOpacity(0.3),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(12),
+            ),
           ),
+          child: _buildButtonContent(Theme.of(context).colorScheme.onPrimary),
         ),
-        child: _buildButtonContent(Colors.white),
       ),
     );
   }
 
   /// Tombol outline (Secondary) — background transparan, border berwarna
-  Widget _buildSecondaryButton(Color buttonColor) {
+  Widget _buildSecondaryButton(Color buttonColor, BuildContext context) {
     return SizedBox(
       width: double.infinity,
       height: 56,
@@ -74,7 +78,7 @@ class CustomButton extends StatelessWidget {
         style: OutlinedButton.styleFrom(
           foregroundColor: buttonColor,
           side: BorderSide(
-            color: onPressed != null ? buttonColor : Colors.grey.shade300,
+            color: onPressed != null ? buttonColor : Theme.of(context).disabledColor,
             width: 2,
           ),
           shape: RoundedRectangleBorder(
@@ -82,7 +86,7 @@ class CustomButton extends StatelessWidget {
           ),
         ),
         child: _buildButtonContent(
-          onPressed != null ? buttonColor : Colors.grey.shade400,
+          onPressed != null ? buttonColor : Theme.of(context).colorScheme.onSurface.withOpacity(0.4),
         ),
       ),
     );

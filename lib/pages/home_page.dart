@@ -125,10 +125,10 @@ class _HomePageState extends State<HomePage> {
                         vertical: 6,
                       ),
                       decoration: BoxDecoration(
-                        color: Theme.of(context).colorScheme.primary.withOpacity(0.1),
+                        color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.1),
                         borderRadius: BorderRadius.circular(20),
                         border: Border.all(
-                          color: Theme.of(context).colorScheme.primary.withOpacity(0.3),
+                          color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.3),
                         ),
                       ),
                       child: Row(
@@ -138,14 +138,14 @@ class _HomePageState extends State<HomePage> {
                             Icons.wb_sunny_outlined,
                             size: 18,
                             color: isDark
-                                ? Theme.of(context).colorScheme.onSurface.withOpacity(0.5)
+                                ? Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.5)
                                 : Theme.of(context).colorScheme.primary,
                           ),
                           const SizedBox(width: 6),
                           Switch(
                             value: isDark,
                             onChanged: (_) => provider.toggleTheme(),
-                            activeColor: Theme.of(context).colorScheme.primary,
+                            activeThumbColor: Theme.of(context).colorScheme.primary,
                             materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
                           ),
                           const SizedBox(width: 6),
@@ -154,7 +154,7 @@ class _HomePageState extends State<HomePage> {
                             size: 18,
                             color: isDark
                                 ? Theme.of(context).colorScheme.primary
-                                : Theme.of(context).colorScheme.onSurface.withOpacity(0.5),
+                                : Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.5),
                           ),
                         ],
                       ),
@@ -169,7 +169,7 @@ class _HomePageState extends State<HomePage> {
                   width: 120,
                   height: 120,
                   decoration: BoxDecoration(
-                    color: Theme.of(context).colorScheme.primary.withOpacity(0.1),
+                    color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.1),
                     shape: BoxShape.circle,
                   ),
                   child: Icon(
@@ -202,7 +202,7 @@ class _HomePageState extends State<HomePage> {
                     fontFamily: 'Poppins',
                     fontSize: 16,
                     fontWeight: FontWeight.w400,
-                    color: Theme.of(context).colorScheme.onSurface.withOpacity(0.7),
+                    color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.7),
                     letterSpacing: 0.5,
                   ),
                 ),
@@ -213,7 +213,7 @@ class _HomePageState extends State<HomePage> {
                 Container(
                   padding: const EdgeInsets.all(20),
                   decoration: BoxDecoration(
-                    color: Theme.of(context).colorScheme.primary.withOpacity(0.1),
+                    color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.1),
                     borderRadius: BorderRadius.circular(16),
                   ),
                   child: Column(
@@ -241,7 +241,7 @@ class _HomePageState extends State<HomePage> {
                           fontFamily: 'Poppins',
                           fontSize: 14,
                           fontWeight: FontWeight.w400,
-                          color: Theme.of(context).colorScheme.onSurface.withOpacity(0.8),
+                          color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.8),
                           height: 1.5,
                         ),
                       ),
@@ -267,7 +267,7 @@ class _HomePageState extends State<HomePage> {
                         fontFamily: 'Poppins',
                         fontSize: 16,
                         fontWeight: FontWeight.w500,
-                        color: Theme.of(context).colorScheme.onSurface.withOpacity(0.8),
+                        color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.8),
                       ),
                     ),
                     const SizedBox(width: 16),
@@ -283,7 +283,7 @@ class _HomePageState extends State<HomePage> {
                         fontFamily: 'Poppins',
                         fontSize: 16,
                         fontWeight: FontWeight.w500,
-                        color: Theme.of(context).colorScheme.onSurface.withOpacity(0.8),
+                        color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.8),
                       ),
                     ),
                   ],
@@ -323,7 +323,7 @@ class _HomePageState extends State<HomePage> {
                           fontFamily: 'Poppins',
                           fontSize: 14,
                           fontWeight: FontWeight.w400,
-                          color: Theme.of(context).colorScheme.onSurface.withOpacity(0.4),
+                          color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.4),
                         ),
                         prefixIcon: Icon(
                           Icons.person_outline,

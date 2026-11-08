@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../data/questions.dart';
 import '../main.dart';
+import '../state/quiz_state.dart';
 import '../widgets/custom_button.dart';
 import '../utils/responsive_helper.dart';
 import 'home_page.dart';
@@ -38,7 +39,6 @@ class ResultPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final quizState = QuizStateProvider.of(context).quizState;
-    final size = MediaQuery.of(context).size;
 
     // Ambil semua data dari QuizState
     final score = quizState.finalScore;
@@ -50,9 +50,9 @@ class ResultPage extends StatelessWidget {
     final scoreColor = _getScoreColor(score);
 
     return Scaffold(
-      // WillPopScope mencegah tombol Back fisik kembali ke QuizPage
-      body: WillPopScope(
-        onWillPop: () async => false,
+      // PopScope mencegah tombol Back fisik kembali ke QuizPage
+      body: PopScope(
+        canPop: false,
         child: SafeArea(
           child: ResponsiveHelper.centerWithMaxWidth(
             context: context,
@@ -85,10 +85,11 @@ class ResultPage extends StatelessWidget {
                   SizedBox(height: ResponsiveHelper.spacing(context) * 2),
 
                   // Tombol-tombol aksi
-                _buildActionButtons(context, quizState),
+                  _buildActionButtons(context, quizState),
 
-                const SizedBox(height: 20),
-              ],
+                  const SizedBox(height: 20),
+                ],
+              ),
             ),
           ),
         ),
@@ -151,7 +152,7 @@ class ResultPage extends StatelessWidget {
           height: 160,
           decoration: BoxDecoration(
             shape: BoxShape.circle,
-            color: scoreColor.withOpacity(0.1),
+            color: scoreColor.withValues(alpha: 0.1),
             border: Border.all(color: scoreColor, width: 4),
           ),
           child: Column(
@@ -174,7 +175,7 @@ class ResultPage extends StatelessWidget {
                 style: TextStyle(
                   fontFamily: 'Poppins',
                   fontSize: 12,
-                  color: scoreColor.withOpacity(0.8),
+                  color: scoreColor.withValues(alpha: 0.8),
                 ),
               ),
             ],
@@ -274,9 +275,9 @@ class ResultPage extends StatelessWidget {
         horizontal: ResponsiveHelper.cardPadding(context) * 0.6,
       ),
       decoration: BoxDecoration(
-        color: color.withOpacity(0.08),
+        color: color.withValues(alpha: 0.08),
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: color.withOpacity(0.2)),
+        border: Border.all(color: color.withValues(alpha: 0.2)),
       ),
       child: Column(
         children: [
@@ -297,7 +298,7 @@ class ResultPage extends StatelessWidget {
             style: TextStyle(
               fontFamily: 'Poppins',
               fontSize: 12,
-              color: color.withOpacity(0.8),
+              color: color.withValues(alpha: 0.8),
             ),
           ),
         ],
@@ -353,7 +354,7 @@ class ResultPage extends StatelessWidget {
     );
   }
 
-  Widget _buildActionButtons(BuildContext context, dynamic quizState) {
+  Widget _buildActionButtons(BuildContext context, QuizState quizState) {
     return Column(
       children: [
         // Tombol Review Jawaban

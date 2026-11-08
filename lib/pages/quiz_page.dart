@@ -4,6 +4,7 @@ import '../data/questions.dart';
 import '../models/question.dart';
 import '../widgets/answer_option.dart';
 import '../main.dart';
+import '../state/quiz_state.dart';
 import '../utils/responsive_helper.dart';
 import 'result_page.dart';
 
@@ -25,10 +26,19 @@ class _QuizPageState extends State<QuizPage> {
   @override
   void initState() {
     super.initState();
-    // Inisialisasi PageController sesuai posisi soal terakhir
-    // agar saat rotasi, kembali ke soal yang sama
+    // Inisialisasi PageController dengan index 0
+    // Index akan di-update di didChangeDependencies
+    _pageController = PageController(initialPage: 0);
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    // Setelah widget tree siap, ambil currentIndex dari QuizState
     final quizState = QuizStateProvider.of(context).quizState;
-    _pageController = PageController(initialPage: quizState.currentIndex);
+    if (_pageController.hasClients && quizState.currentIndex != 0) {
+      _pageController.jumpToPage(quizState.currentIndex);
+    }
   }
 
   @override
@@ -63,7 +73,7 @@ class _QuizPageState extends State<QuizPage> {
         Navigator.push(
           context,
           MaterialPageRoute(
-            builder: (context) => ResultPage(username: widget.username),
+            builder: (context) => const ResultPage(),
           ),
         );
       }
@@ -246,7 +256,7 @@ class _QuizPageState extends State<QuizPage> {
               Navigator.push(
                 context,
                 MaterialPageRoute(
-                  builder: (context) => ResultPage(username: widget.username),
+                  builder: (context) => const ResultPage(),
                 ),
               );
             },
@@ -270,100 +280,76 @@ class _QuizPageState extends State<QuizPage> {
     );
   }
 
-  void _showQuizCompleteSnackBar() {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: const Row(
-          children: [
-            Icon(Icons.check_circle_outline, color: Colors.white),
-            SizedBox(width: 12),
-            Text(
-              'Kuis selesai! Result page segera hadir.',
-              style: TextStyle(
-                fontFamily: 'Poppins',
-                fontWeight: FontWeight.w500,
-              ),
-            ),
-          ],
-        ),
-        backgroundColor: Colors.green.shade700,
-        behavior: SnackBarBehavior.floating,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(10),
-        ),
-        margin: const EdgeInsets.all(16),
-      ),
-    );
-  }
-
   // ─── Build ─────────────────────────────────────────────────────
 
   @override
   Widget build(BuildContext context) {
     final quizState = QuizStateProvider.of(context).quizState;
-    final size = MediaQuery.of(context).size;
 
-    return WillPopScope(
-      onWillPop: () async {
-        _showExitConfirmationDialog();
-        return false; // Mencegah pop otomatis
+    return PopScope(
+      canPop: false,
+      onPopInvokedWithResult: (didPop, result) {
+        if (!didPop) {
+          _showExitConfirmationDialog();
+        }
       },
       child: Scaffold(
         appBar: _buildAppBar(quizState),
         body: SafeArea(
-        child: Column(
-          children: [
-            _buildHeader(quizState),
-            Expanded(
-              child: PageView.builder(
-                controller: _pageController,
-                physics: const NeverScrollableScrollPhysics(),
-                itemCount: quizQuestions.length,
-                onPageChanged: (index) {
-                  quizState.jumpToQuestion(index);
-                  setState(() {});
-                },
-                itemBuilder: (context, index) {
-                  return ResponsiveHelper.centerWithMaxWidth(
-                    context: context,
-                    maxWidth: ResponsiveHelper.quizCardMaxWidth(context),
-                    child: SingleChildScrollView(
-                      padding: EdgeInsets.symmetric(
-                        horizontal: ResponsiveHelper.horizontalPadding(context),
-                        vertical: ResponsiveHelper.verticalPadding(context),
-                      ),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          _buildQuestionCard(quizState),
-                          SizedBox(height: ResponsiveHelper.spacing(context)),
-                          Padding(
-                            padding:
-                                const EdgeInsets.only(left: 4, bottom: 12),
-                          child: Text(
-                            'Pilih jawaban:',
-                            style: TextStyle(
-                              fontFamily: 'Poppins',
-                              fontSize: 14,
-                              fontWeight: FontWeight.w500,
-                              color: Colors.grey.shade600,
-                            ),
-                          ),
+          child: Column(
+            children: [
+              _buildHeader(quizState),
+              Expanded(
+                child: PageView.builder(
+                  controller: _pageController,
+                  physics: const NeverScrollableScrollPhysics(),
+                  itemCount: quizQuestions.length,
+                  onPageChanged: (index) {
+                    quizState.jumpToQuestion(index);
+                    setState(() {});
+                  },
+                  itemBuilder: (context, index) {
+                    return ResponsiveHelper.centerWithMaxWidth(
+                      context: context,
+                      maxWidth: ResponsiveHelper.quizCardMaxWidth(context),
+                      child: SingleChildScrollView(
+                        padding: EdgeInsets.symmetric(
+                          horizontal: ResponsiveHelper.horizontalPadding(context),
+                          vertical: ResponsiveHelper.verticalPadding(context),
                         ),
-                        _buildAnswerOptions(index, quizState),
-                        const SizedBox(height: 16),
-                        _buildQuestionDots(quizState),
-                        const SizedBox(height: 8),
-                      ],
-                    ),
-                  );
-                },
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            _buildQuestionCard(quizState),
+                            SizedBox(height: ResponsiveHelper.spacing(context)),
+                            Padding(
+                              padding:
+                                  const EdgeInsets.only(left: 4, bottom: 12),
+                              child: Text(
+                                'Pilih jawaban:',
+                                style: TextStyle(
+                                  fontFamily: 'Poppins',
+                                  fontSize: 14,
+                                  fontWeight: FontWeight.w500,
+                                  color: Colors.grey.shade600,
+                                ),
+                              ),
+                            ),
+                            _buildAnswerOptions(index, quizState),
+                            const SizedBox(height: 16),
+                            _buildQuestionDots(quizState),
+                            const SizedBox(height: 8),
+                          ],
+                        ),
+                      ),
+                    );
+                  },
+                ),
               ),
-            ),
-            _buildNavigationButtons(quizState),
-          ],
+              _buildNavigationButtons(quizState),
+            ],
+          ),
         ),
-      ),
       ), // Scaffold
     ); // WillPopScope
   }
@@ -379,7 +365,7 @@ class _QuizPageState extends State<QuizPage> {
         children: [
           CircleAvatar(
             radius: 18,
-            backgroundColor: Theme.of(context).colorScheme.primary.withOpacity(0.1),
+            backgroundColor: Theme.of(context).colorScheme.primary.withValues(alpha: 0.1),
             child: Text(
               widget.username.isNotEmpty
                   ? widget.username[0].toUpperCase()
@@ -412,7 +398,7 @@ class _QuizPageState extends State<QuizPage> {
                   style: TextStyle(
                     fontFamily: 'Poppins',
                     fontSize: 11,
-                    color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6),
+                    color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.6),
                   ),
                 ),
               ],
@@ -424,7 +410,7 @@ class _QuizPageState extends State<QuizPage> {
         // Tombol keluar dengan konfirmasi
         IconButton(
           onPressed: _showExitConfirmationDialog,
-          icon: Icon(Icons.close, color: Theme.of(context).colorScheme.onSurface.withOpacity(0.7)),
+          icon: Icon(Icons.close, color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.7)),
           tooltip: 'Keluar',
         ),
       ],
@@ -443,7 +429,7 @@ class _QuizPageState extends State<QuizPage> {
         color: Theme.of(context).scaffoldBackgroundColor,
         boxShadow: [
           BoxShadow(
-            color: Theme.of(context).shadowColor.withOpacity(0.1),
+            color: Theme.of(context).shadowColor.withValues(alpha: 0.1),
             blurRadius: 6,
             offset: const Offset(0, 2),
           ),
@@ -462,7 +448,7 @@ class _QuizPageState extends State<QuizPage> {
                       style: TextStyle(
                         fontFamily: 'Poppins',
                         fontSize: 14,
-                        color: Theme.of(context).colorScheme.onSurface.withOpacity(0.7),
+                        color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.7),
                       ),
                     ),
                     TextSpan(
@@ -479,7 +465,7 @@ class _QuizPageState extends State<QuizPage> {
                       style: TextStyle(
                         fontFamily: 'Poppins',
                         fontSize: 14,
-                        color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6),
+                        color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.6),
                       ),
                     ),
                   ],
@@ -514,7 +500,7 @@ class _QuizPageState extends State<QuizPage> {
               child: LinearProgressIndicator(
                 value: value,
                 minHeight: 8,
-                backgroundColor: Theme.of(context).colorScheme.surfaceVariant,
+                backgroundColor: Theme.of(context).colorScheme.surfaceContainerHighest,
                 valueColor: AlwaysStoppedAnimation<Color>(
                     Theme.of(context).colorScheme.primary),
               ),
@@ -561,9 +547,9 @@ class _QuizPageState extends State<QuizPage> {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 7),
       decoration: BoxDecoration(
-        color: color.withOpacity(0.08),
+        color: color.withValues(alpha: 0.08),
         borderRadius: BorderRadius.circular(10),
-        border: Border.all(color: color.withOpacity(0.2)),
+        border: Border.all(color: color.withValues(alpha: 0.2)),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
@@ -587,7 +573,7 @@ class _QuizPageState extends State<QuizPage> {
               style: TextStyle(
                 fontFamily: 'Poppins',
                 fontSize: 11,
-                color: color.withOpacity(0.8),
+                color: color.withValues(alpha: 0.8),
               ),
             ),
           ),
@@ -646,7 +632,7 @@ class _QuizPageState extends State<QuizPage> {
         borderRadius: BorderRadius.circular(20),
         boxShadow: [
           BoxShadow(
-            color: Colors.deepPurple.withOpacity(0.3),
+            color: Colors.deepPurple.withValues(alpha: 0.3),
             blurRadius: 12,
             offset: const Offset(0, 4),
           ),
@@ -659,7 +645,7 @@ class _QuizPageState extends State<QuizPage> {
             padding: const EdgeInsets.symmetric(
                 horizontal: 12, vertical: 4),
             decoration: BoxDecoration(
-              color: Colors.white.withOpacity(0.2),
+              color: Colors.white.withValues(alpha: 0.2),
               borderRadius: BorderRadius.circular(20),
             ),
             child: Text(

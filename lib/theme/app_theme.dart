@@ -29,12 +29,10 @@ class AppTheme {
         primary: _lightPrimary,
         secondary: Colors.deepPurpleAccent,
         surface: _lightSurface,
-        background: _lightBackground,
         error: Colors.red.shade600,
         onPrimary: Colors.white,
         onSecondary: Colors.white,
         onSurface: Colors.grey.shade800,
-        onBackground: Colors.grey.shade800,
         onError: Colors.white,
       ),
 
@@ -52,7 +50,7 @@ class AppTheme {
         ),
       ),
 
-      cardTheme: CardTheme(
+      cardTheme: CardThemeData(
         color: _lightCardBackground,
         elevation: 2,
         shape: RoundedRectangleBorder(
@@ -126,12 +124,10 @@ class AppTheme {
         primary: _darkPrimary,
         secondary: Colors.deepPurpleAccent.shade100,
         surface: _darkSurface,
-        background: _darkBackground,
         error: Colors.red.shade400,
         onPrimary: Colors.black,
         onSecondary: Colors.black,
         onSurface: Colors.grey.shade200,
-        onBackground: Colors.grey.shade200,
         onError: Colors.black,
       ),
 
@@ -149,7 +145,7 @@ class AppTheme {
         ),
       ),
 
-      cardTheme: CardTheme(
+      cardTheme: CardThemeData(
         color: _darkCardBackground,
         elevation: 4,
         shape: RoundedRectangleBorder(

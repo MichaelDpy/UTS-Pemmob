@@ -167,8 +167,8 @@ class AnswerOption extends StatelessWidget {
       return _AnswerColors(
         background: Colors.deepPurple,
         border: Colors.deepPurple,
-        shadow: Colors.deepPurple.withOpacity(0.2),
-        labelBackground: Colors.white.withOpacity(0.2),
+        shadow: Colors.deepPurple.withValues(alpha: 0.2),
+        labelBackground: Colors.white.withValues(alpha: 0.2),
         labelText: Colors.white,
         text: Colors.white,
       );
@@ -190,7 +190,7 @@ class AnswerOption extends StatelessWidget {
       return _AnswerColors(
         background: Colors.green.shade50,
         border: Colors.green,
-        shadow: Colors.green.withOpacity(0.15),
+        shadow: Colors.green.withValues(alpha: 0.15),
         labelBackground: Colors.green.shade100,
         labelText: Colors.green.shade800,
         text: Colors.green.shade800,
@@ -200,7 +200,7 @@ class AnswerOption extends StatelessWidget {
       return _AnswerColors(
         background: Colors.red.shade50,
         border: Colors.red,
-        shadow: Colors.red.withOpacity(0.15),
+        shadow: Colors.red.withValues(alpha: 0.15),
         labelBackground: Colors.red.shade100,
         labelText: Colors.red.shade800,
         text: Colors.red.shade800,
@@ -208,7 +208,7 @@ class AnswerOption extends StatelessWidget {
     } else if (!isSelected && isCorrect) {
       // Tidak dipilih tapi ini jawaban benar → hijau outline tipis
       return _AnswerColors(
-        background: Colors.green.shade50.withOpacity(0.5),
+        background: Colors.green.shade50.withValues(alpha: 0.5),
         border: Colors.green.shade300,
         shadow: Colors.transparent,
         labelBackground: Colors.green.shade50,

@@ -71,7 +71,7 @@ class ErrorHandler {
           style: TextStyle(
             fontFamily: 'Poppins',
             fontSize: 14,
-            color: Theme.of(context).colorScheme.onSurface.withOpacity(0.8),
+            color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.8),
             height: 1.5,
           ),
         ),
@@ -256,7 +256,7 @@ class _ErrorBoundaryWidgetState extends State<ErrorBoundaryWidget> {
                     style: TextStyle(
                       fontFamily: 'Poppins',
                       fontSize: 14,
-                      color: Theme.of(context).colorScheme.onSurface.withOpacity(0.7),
+                      color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.7),
                     ),
                   ),
                 ],

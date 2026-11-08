@@ -3,6 +3,7 @@ import '../data/questions.dart';
 import '../models/question.dart';
 import '../widgets/answer_option.dart';
 import '../main.dart';
+import '../state/quiz_state.dart';
 import '../utils/responsive_helper.dart';
 
 /// Halaman review jawaban — menampilkan semua soal dengan jawaban user,
@@ -63,7 +64,7 @@ class ReviewPage extends StatelessWidget {
             style: TextStyle(
               fontFamily: 'Poppins',
               fontSize: 11,
-              color: Theme.of(context).colorScheme.onSurface.withOpacity(0.7),
+              color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.7),
             ),
           ),
         ],
@@ -93,7 +94,7 @@ class ReviewPage extends StatelessWidget {
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
-            color: Theme.of(context).shadowColor.withOpacity(0.1),
+            color: Theme.of(context).shadowColor.withValues(alpha: 0.1),
             blurRadius: 8,
             offset: const Offset(0, 2),
           ),

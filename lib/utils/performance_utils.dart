@@ -69,12 +69,10 @@ class PerformanceUtils {
     EdgeInsets? padding,
   }) {
     return ListView.builder(
-      itemCount: itemCount,
+      scrollCacheExtent: ScrollCacheExtent.pixels(500), itemCount: itemCount,
       itemBuilder: itemBuilder,
       physics: physics,
-      padding: padding,
-      // Performance optimizations
-      cacheExtent: 500, // Cache 500px ahead
+      padding: padding, // Cache 500px ahead
       addAutomaticKeepAlives: true,
       addRepaintBoundaries: true,
       addSemanticIndexes: true,

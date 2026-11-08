@@ -66,9 +66,9 @@ class CustomButton extends StatelessWidget {
             foregroundColor: Theme.of(context).colorScheme.onPrimary,
             // Nonaktif jika onPressed null
             disabledBackgroundColor: Theme.of(context).disabledColor,
-            disabledForegroundColor: Theme.of(context).colorScheme.onSurface.withOpacity(0.4),
+            disabledForegroundColor: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.4),
             elevation: onPressed != null ? 2 : 0,
-            shadowColor: buttonColor.withOpacity(0.3),
+            shadowColor: buttonColor.withValues(alpha: 0.3),
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(12),
             ),
@@ -97,7 +97,7 @@ class CustomButton extends StatelessWidget {
           ),
         ),
         child: _buildButtonContent(
-          onPressed != null ? buttonColor : Theme.of(context).colorScheme.onSurface.withOpacity(0.4),
+          onPressed != null ? buttonColor : Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.4),
         ),
       ),
     );

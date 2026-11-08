@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../data/questions.dart';
+import '../utils/constants.dart';
 
 /// Menyimpan seluruh state kuis yang perlu dipertahankan
 /// saat rotasi layar atau navigasi antarhalaman.

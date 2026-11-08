@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../widgets/custom_button.dart';
 import '../main.dart';
+import '../utils/constants.dart';
 import 'quiz_page.dart';
 
 /// Halaman utama aplikasi Quizify
@@ -26,14 +27,14 @@ class _HomePageState extends State<HomePage> {
 
     if (name.isEmpty) {
       setState(() {
-        _nameError = 'Nama tidak boleh kosong';
+        _nameError = AppConstants.nameValidationEmpty;
       });
       return false;
     }
 
-    if (name.length < 2) {
+    if (name.length < AppConstants.minUsernameLength) {
       setState(() {
-        _nameError = 'Nama minimal 2 karakter';
+        _nameError = AppConstants.nameValidationTooShort;
       });
       return false;
     }

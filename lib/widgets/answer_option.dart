@@ -40,7 +40,9 @@ class AnswerOption extends StatelessWidget {
     // Tentukan warna berdasarkan mode dan status
     final colors = _resolveColors();
 
-    return GestureDetector(
+    // Wrap dengan RepaintBoundary untuk isolasi repaint
+    return RepaintBoundary(
+      child: GestureDetector(
       onTap: onTap,
       child: AnimatedContainer(
         // Animasi transisi warna saat dipilih
@@ -107,6 +109,7 @@ class AnswerOption extends StatelessWidget {
           ],
         ),
       ),
+      ), // RepaintBoundary
     );
   }
 

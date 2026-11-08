@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../data/questions.dart';
 import '../models/question.dart';
+import '../widgets/answer_option.dart';
 
 /// Halaman utama kuis tempat pengguna menjawab pertanyaan satu per satu.
 /// Menerima nama pengguna dari HomePage.
@@ -263,95 +264,21 @@ class _QuizPageState extends State<QuizPage> {
     );
   }
 
-  /// Daftar 4 pilihan jawaban (sementara — akan diganti AnswerOption widget)
+  /// Daftar 4 pilihan jawaban menggunakan AnswerOption reusable widget
   Widget _buildAnswerOptions() {
+    final optionLabels = ['A', 'B', 'C', 'D'];
     return Column(
       children: List.generate(
         _currentQuestion.options.length,
-        (index) => _buildAnswerItem(index),
-      ),
-    );
-  }
-
-  /// Satu item pilihan jawaban
-  Widget _buildAnswerItem(int index) {
-    // Tentukan warna berdasarkan status pilihan
-    final isSelected = _currentAnswer == index;
-    final optionLabels = ['A', 'B', 'C', 'D'];
-
-    return GestureDetector(
-      onTap: () {
-        setState(() {
-          _userAnswers[_currentIndex] = index;
-        });
-      },
-      child: Container(
-        margin: const EdgeInsets.only(bottom: 12),
-        padding: const EdgeInsets.all(16),
-        decoration: BoxDecoration(
-          color: isSelected ? Colors.deepPurple : Colors.white,
-          borderRadius: BorderRadius.circular(14),
-          border: Border.all(
-            color: isSelected ? Colors.deepPurple : Colors.grey.shade200,
-            width: isSelected ? 2 : 1.5,
-          ),
-          boxShadow: [
-            BoxShadow(
-              color: isSelected
-                  ? Colors.deepPurple.withOpacity(0.2)
-                  : Colors.grey.shade100,
-              blurRadius: isSelected ? 8 : 4,
-              offset: const Offset(0, 2),
-            ),
-          ],
-        ),
-        child: Row(
-          children: [
-            // Label A, B, C, D
-            Container(
-              width: 36,
-              height: 36,
-              decoration: BoxDecoration(
-                color: isSelected
-                    ? Colors.white.withOpacity(0.2)
-                    : Colors.deepPurple.shade50,
-                borderRadius: BorderRadius.circular(8),
-              ),
-              child: Center(
-                child: Text(
-                  optionLabels[index],
-                  style: TextStyle(
-                    fontFamily: 'Poppins',
-                    fontSize: 14,
-                    fontWeight: FontWeight.bold,
-                    color: isSelected ? Colors.white : Colors.deepPurple,
-                  ),
-                ),
-              ),
-            ),
-            const SizedBox(width: 14),
-            // Teks pilihan
-            Expanded(
-              child: Text(
-                _currentQuestion.options[index],
-                style: TextStyle(
-                  fontFamily: 'Poppins',
-                  fontSize: 15,
-                  fontWeight:
-                      isSelected ? FontWeight.w600 : FontWeight.w400,
-                  color: isSelected ? Colors.white : Colors.grey.shade800,
-                  height: 1.4,
-                ),
-              ),
-            ),
-            // Ikon centang jika dipilih
-            if (isSelected)
-              const Icon(
-                Icons.check_circle,
-                color: Colors.white,
-                size: 22,
-              ),
-          ],
+        (index) => AnswerOption(
+          label: optionLabels[index],
+          text: _currentQuestion.options[index],
+          isSelected: _currentAnswer == index,
+          onTap: () {
+            setState(() {
+              _userAnswers[_currentIndex] = index;
+            });
+          },
         ),
       ),
     );

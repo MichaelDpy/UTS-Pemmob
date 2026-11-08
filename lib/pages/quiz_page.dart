@@ -3,13 +3,13 @@ import 'package:flutter/services.dart';
 import '../data/questions.dart';
 import '../models/question.dart';
 import '../widgets/answer_option.dart';
+import '../main.dart';
 
-/// Halaman utama kuis tempat pengguna menjawab pertanyaan satu per satu.
-/// Menerima nama pengguna dari HomePage.
+/// Halaman kuis — menampilkan pertanyaan satu per satu.
+/// State kuis dikelola oleh QuizState yang hidup di MyApp,
+/// sehingga tidak hilang saat rotasi atau navigasi.
 class QuizPage extends StatefulWidget {
-  /// Nama pengguna yang diinput di HomePage
   final String username;
-
   const QuizPage({super.key, required this.username});
 
   @override
@@ -17,51 +17,16 @@ class QuizPage extends StatefulWidget {
 }
 
 class _QuizPageState extends State<QuizPage> {
-  // ─── State Variables ───────────────────────────────────────────
-
-  /// Indeks pertanyaan yang sedang ditampilkan (0–9)
-  int _currentIndex = 0;
-
-  /// List jawaban pengguna untuk setiap pertanyaan.
-  /// Nilai -1 = belum dijawab, 0–3 = indeks pilihan yang dipilih
-  late List<int> _userAnswers;
-
-  /// Controller untuk animasi slide antar soal
+  // PageController untuk animasi slide antar soal
   late PageController _pageController;
-
-  // ─── Getter Helpers ────────────────────────────────────────────
-
-  /// Pertanyaan yang sedang aktif
-  Question get _currentQuestion => quizQuestions[_currentIndex];
-
-  /// Jawaban pengguna untuk pertanyaan saat ini
-  int get _currentAnswer => _userAnswers[_currentIndex];
-
-  /// Apakah pertanyaan saat ini sudah dijawab
-  bool get _isAnswered => _currentAnswer != -1;
-
-  /// Apakah ini pertanyaan terakhir
-  bool get _isLastQuestion => _currentIndex == quizQuestions.length - 1;
-
-  /// Apakah ini pertanyaan pertama
-  bool get _isFirstQuestion => _currentIndex == 0;
-
-  /// Hitung soal yang sudah dijawab
-  int get _answeredCount =>
-      _userAnswers.where((answer) => answer != -1).length;
-
-  /// Hitung soal yang belum dijawab
-  int get _unansweredCount => quizQuestions.length - _answeredCount;
-
-  /// Cek apakah semua soal sudah dijawab
-  bool get _allAnswered => _unansweredCount == 0;
 
   @override
   void initState() {
     super.initState();
-    // Inisialisasi semua jawaban dengan -1 (belum dijawab)
-    _userAnswers = List.filled(quizQuestions.length, -1);
-    _pageController = PageController(initialPage: 0);
+    // Inisialisasi PageController sesuai posisi soal terakhir
+    // agar saat rotasi, kembali ke soal yang sama
+    final quizState = QuizStateProvider.of(context).quizState;
+    _pageController = PageController(initialPage: quizState.currentIndex);
   }
 
   @override
@@ -72,33 +37,32 @@ class _QuizPageState extends State<QuizPage> {
 
   // ─── Navigation Methods ────────────────────────────────────────
 
-  /// Simpan pilihan jawaban + haptic feedback
   void _selectAnswer(int index) {
     HapticFeedback.selectionClick();
-    setState(() {
-      _userAnswers[_currentIndex] = index;
-    });
+    final quizState = QuizStateProvider.of(context).quizState;
+    quizState.selectAnswer(index);
+    // Panggil setState agar UI quiz_page ikut update
+    setState(() {});
   }
 
-  /// Pindah ke soal berikutnya
-  /// Boleh maju hanya jika soal sudah dijawab (kecuali di soal terakhir)
   void _goToNext() {
-    if (!_isAnswered) {
-      // Tampilkan peringatan jika belum pilih jawaban
+    final quizState = QuizStateProvider.of(context).quizState;
+
+    if (!quizState.isCurrentAnswered) {
       _showMustAnswerSnackBar();
       return;
     }
 
-    if (_isLastQuestion) {
-      // Di soal terakhir — cek apakah masih ada soal yang belum dijawab
-      if (!_allAnswered) {
-        _showUnansweredDialog();
+    if (quizState.isLastQuestion) {
+      if (!quizState.allAnswered) {
+        _showUnansweredDialog(quizState);
       } else {
-        // Semua soal sudah dijawab → TODO: ke Result Page
+        // TODO: Navigasi ke ResultPage (commit 19)
         _showQuizCompleteSnackBar();
       }
     } else {
-      // Pindah ke soal berikutnya dengan animasi slide
+      quizState.goToNext();
+      setState(() {});
       _pageController.nextPage(
         duration: const Duration(milliseconds: 300),
         curve: Curves.easeInOut,
@@ -106,9 +70,11 @@ class _QuizPageState extends State<QuizPage> {
     }
   }
 
-  /// Pindah ke soal sebelumnya (boleh tanpa jawab dulu)
   void _goToPrevious() {
-    if (!_isFirstQuestion) {
+    final quizState = QuizStateProvider.of(context).quizState;
+    if (!quizState.isFirstQuestion) {
+      quizState.goToPrevious();
+      setState(() {});
       _pageController.previousPage(
         duration: const Duration(milliseconds: 300),
         curve: Curves.easeInOut,
@@ -116,8 +82,10 @@ class _QuizPageState extends State<QuizPage> {
     }
   }
 
-  /// Lompat ke soal tertentu via dot indicator
   void _jumpToQuestion(int index) {
+    final quizState = QuizStateProvider.of(context).quizState;
+    quizState.jumpToQuestion(index);
+    setState(() {});
     _pageController.animateToPage(
       index,
       duration: const Duration(milliseconds: 400),
@@ -125,9 +93,8 @@ class _QuizPageState extends State<QuizPage> {
     );
   }
 
-  // ─── Dialog & SnackBar ─────────────────────────────────────────
+  // ─── Dialogs & SnackBars ───────────────────────────────────────
 
-  /// SnackBar peringatan jika belum memilih jawaban
   void _showMustAnswerSnackBar() {
     ScaffoldMessenger.of(context).clearSnackBars();
     ScaffoldMessenger.of(context).showSnackBar(
@@ -138,25 +105,31 @@ class _QuizPageState extends State<QuizPage> {
             SizedBox(width: 12),
             Text(
               'Pilih jawaban terlebih dahulu!',
-              style: TextStyle(fontFamily: 'Poppins', fontWeight: FontWeight.w500),
+              style: TextStyle(
+                fontFamily: 'Poppins',
+                fontWeight: FontWeight.w500,
+              ),
             ),
           ],
         ),
         backgroundColor: Colors.orange.shade700,
         behavior: SnackBarBehavior.floating,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(10),
+        ),
         margin: const EdgeInsets.all(16),
         duration: const Duration(seconds: 2),
       ),
     );
   }
 
-  /// Dialog konfirmasi jika ada soal yang belum dijawab saat klik Selesai
-  void _showUnansweredDialog() {
+  void _showUnansweredDialog(QuizState quizState) {
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(20),
+        ),
         title: const Text(
           'Masih Ada Soal Belum Dijawab',
           style: TextStyle(
@@ -166,8 +139,8 @@ class _QuizPageState extends State<QuizPage> {
           ),
         ),
         content: Text(
-          'Ada $_unansweredCount soal yang belum dijawab. '
-          'Apakah Anda ingin melanjutkan dan melewati soal tersebut?',
+          'Ada ${quizState.unansweredCount} soal yang belum dijawab. '
+          'Apakah Anda ingin melanjutkan?',
           style: TextStyle(
             fontFamily: 'Poppins',
             fontSize: 14,
@@ -176,16 +149,12 @@ class _QuizPageState extends State<QuizPage> {
           ),
         ),
         actions: [
-          // Kembali dan isi soal yang belum dijawab
           TextButton(
             onPressed: () {
               Navigator.pop(ctx);
               // Lompat ke soal pertama yang belum dijawab
-              final firstUnanswered =
-                  _userAnswers.indexWhere((ans) => ans == -1);
-              if (firstUnanswered != -1) {
-                _jumpToQuestion(firstUnanswered);
-              }
+              final idx = quizState.userAnswers.indexWhere((a) => a == -1);
+              if (idx != -1) _jumpToQuestion(idx);
             },
             child: Text(
               'Kembali',
@@ -196,7 +165,6 @@ class _QuizPageState extends State<QuizPage> {
               ),
             ),
           ),
-          // Tetap selesaikan kuis meskipun ada yang belum dijawab
           ElevatedButton(
             onPressed: () {
               Navigator.pop(ctx);
@@ -222,7 +190,6 @@ class _QuizPageState extends State<QuizPage> {
     );
   }
 
-  /// SnackBar sementara saat kuis selesai (akan diganti navigasi Result Page)
   void _showQuizCompleteSnackBar() {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
@@ -232,13 +199,18 @@ class _QuizPageState extends State<QuizPage> {
             SizedBox(width: 12),
             Text(
               'Kuis selesai! Result page segera hadir.',
-              style: TextStyle(fontFamily: 'Poppins', fontWeight: FontWeight.w500),
+              style: TextStyle(
+                fontFamily: 'Poppins',
+                fontWeight: FontWeight.w500,
+              ),
             ),
           ],
         ),
         backgroundColor: Colors.green.shade700,
         behavior: SnackBarBehavior.floating,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(10),
+        ),
         margin: const EdgeInsets.all(16),
       ),
     );
@@ -248,28 +220,24 @@ class _QuizPageState extends State<QuizPage> {
 
   @override
   Widget build(BuildContext context) {
+    final quizState = QuizStateProvider.of(context).quizState;
     final size = MediaQuery.of(context).size;
 
     return Scaffold(
       backgroundColor: Colors.white,
-      appBar: _buildAppBar(),
+      appBar: _buildAppBar(quizState),
       body: SafeArea(
         child: Column(
           children: [
-            // Header progress
-            _buildHeader(),
-
-            // Konten soal — gunakan PageView untuk swipe & animasi
+            _buildHeader(quizState),
             Expanded(
               child: PageView.builder(
                 controller: _pageController,
-                // Nonaktifkan swipe agar pengguna tidak skip soal
                 physics: const NeverScrollableScrollPhysics(),
                 itemCount: quizQuestions.length,
                 onPageChanged: (index) {
-                  setState(() {
-                    _currentIndex = index;
-                  });
+                  quizState.jumpToQuestion(index);
+                  setState(() {});
                 },
                 itemBuilder: (context, index) {
                   return SingleChildScrollView(
@@ -281,14 +249,11 @@ class _QuizPageState extends State<QuizPage> {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        // Card pertanyaan
-                        _buildQuestionCard(),
-
+                        _buildQuestionCard(quizState),
                         const SizedBox(height: 20),
-
-                        // Label pilih jawaban
                         Padding(
-                          padding: const EdgeInsets.only(left: 4, bottom: 12),
+                          padding:
+                              const EdgeInsets.only(left: 4, bottom: 12),
                           child: Text(
                             'Pilih jawaban:',
                             style: TextStyle(
@@ -299,15 +264,9 @@ class _QuizPageState extends State<QuizPage> {
                             ),
                           ),
                         ),
-
-                        // 4 pilihan jawaban
-                        _buildAnswerOptions(index),
-
+                        _buildAnswerOptions(index, quizState),
                         const SizedBox(height: 16),
-
-                        // Dot indicator
-                        _buildQuestionDots(),
-
+                        _buildQuestionDots(quizState),
                         const SizedBox(height: 8),
                       ],
                     ),
@@ -315,9 +274,7 @@ class _QuizPageState extends State<QuizPage> {
                 },
               ),
             ),
-
-            // Footer tombol navigasi
-            _buildNavigationButtons(),
+            _buildNavigationButtons(quizState),
           ],
         ),
       ),
@@ -326,8 +283,7 @@ class _QuizPageState extends State<QuizPage> {
 
   // ─── Widget Builders ───────────────────────────────────────────
 
-  /// AppBar dengan nama, progress info, dan tombol keluar
-  PreferredSizeWidget _buildAppBar() {
+  PreferredSizeWidget _buildAppBar(QuizState quizState) {
     return AppBar(
       backgroundColor: Colors.white,
       elevation: 0,
@@ -365,7 +321,7 @@ class _QuizPageState extends State<QuizPage> {
                   ),
                 ),
                 Text(
-                  '$_answeredCount dari ${quizQuestions.length} dijawab',
+                  '${quizState.answeredCount} dari ${quizQuestions.length} dijawab',
                   style: TextStyle(
                     fontFamily: 'Poppins',
                     fontSize: 11,
@@ -378,7 +334,7 @@ class _QuizPageState extends State<QuizPage> {
         ],
       ),
       actions: [
-        // Tombol keluar — dialog konfirmasi ditambahkan di commit 17
+        // Tombol keluar — dialog konfirmasi di commit 17
         IconButton(
           onPressed: () => Navigator.pop(context),
           icon: Icon(Icons.close, color: Colors.grey.shade600),
@@ -388,12 +344,11 @@ class _QuizPageState extends State<QuizPage> {
     );
   }
 
-  /// Header: label nomor soal + progress bar + stats dijawab/belum
-  Widget _buildHeader() {
-    // Persentase berdasarkan posisi soal saat ini
-    final progress = (_currentIndex + 1) / quizQuestions.length;
-    // Persentase berdasarkan soal yang sudah dijawab
-    final answeredProgress = _answeredCount / quizQuestions.length;
+  Widget _buildHeader(QuizState quizState) {
+    final progress =
+        (quizState.currentIndex + 1) / quizQuestions.length;
+    final answeredProgress =
+        quizState.answeredCount / quizQuestions.length;
 
     return Container(
       padding: const EdgeInsets.fromLTRB(20, 10, 20, 16),
@@ -409,11 +364,9 @@ class _QuizPageState extends State<QuizPage> {
       ),
       child: Column(
         children: [
-          // ── Baris 1: Nomor soal + Badge persentase ──────────
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              // Nomor soal aktif
               RichText(
                 text: TextSpan(
                   children: [
@@ -422,12 +375,11 @@ class _QuizPageState extends State<QuizPage> {
                       style: TextStyle(
                         fontFamily: 'Poppins',
                         fontSize: 14,
-                        fontWeight: FontWeight.w400,
                         color: Colors.grey.shade600,
                       ),
                     ),
                     TextSpan(
-                      text: '${_currentIndex + 1}',
+                      text: '${quizState.currentIndex + 1}',
                       style: const TextStyle(
                         fontFamily: 'Poppins',
                         fontSize: 18,
@@ -440,15 +392,12 @@ class _QuizPageState extends State<QuizPage> {
                       style: TextStyle(
                         fontFamily: 'Poppins',
                         fontSize: 14,
-                        fontWeight: FontWeight.w400,
                         color: Colors.grey.shade500,
                       ),
                     ),
                   ],
                 ),
               ),
-
-              // Badge % progress posisi soal
               Container(
                 padding: const EdgeInsets.symmetric(
                     horizontal: 12, vertical: 5),
@@ -468,10 +417,7 @@ class _QuizPageState extends State<QuizPage> {
               ),
             ],
           ),
-
           const SizedBox(height: 10),
-
-          // ── Baris 2: Progress bar posisi soal ───────────────
           TweenAnimationBuilder<double>(
             tween: Tween(begin: 0, end: progress),
             duration: const Duration(milliseconds: 400),
@@ -487,35 +433,30 @@ class _QuizPageState extends State<QuizPage> {
               ),
             ),
           ),
-
           const SizedBox(height: 12),
-
-          // ── Baris 3: Stats dijawab / belum dijawab ──────────
           Row(
             children: [
-              // Stat: Dijawab
               Expanded(
                 child: _buildStatChip(
                   icon: Icons.check_circle_outline,
                   label: 'Dijawab',
-                  value: _answeredCount,
+                  value: quizState.answeredCount,
                   color: Colors.green.shade600,
                 ),
               ),
               const SizedBox(width: 8),
-              // Stat: Belum dijawab
               Expanded(
                 child: _buildStatChip(
                   icon: Icons.radio_button_unchecked,
                   label: 'Belum',
-                  value: _unansweredCount,
+                  value: quizState.unansweredCount,
                   color: Colors.orange.shade600,
                 ),
               ),
               const SizedBox(width: 8),
-              // Stat: Progress kecil dijawab
               Expanded(
-                child: _buildAnsweredProgressChip(answeredProgress),
+                child: _buildAnsweredProgressChip(
+                    answeredProgress, quizState.answeredCount),
               ),
             ],
           ),
@@ -524,7 +465,6 @@ class _QuizPageState extends State<QuizPage> {
     );
   }
 
-  /// Chip statistik kecil (dijawab / belum dijawab)
   Widget _buildStatChip({
     required IconData icon,
     required String label,
@@ -560,7 +500,6 @@ class _QuizPageState extends State<QuizPage> {
               style: TextStyle(
                 fontFamily: 'Poppins',
                 fontSize: 11,
-                fontWeight: FontWeight.w400,
                 color: color.withOpacity(0.8),
               ),
             ),
@@ -570,8 +509,8 @@ class _QuizPageState extends State<QuizPage> {
     );
   }
 
-  /// Chip progress mini untuk soal yang sudah dijawab
-  Widget _buildAnsweredProgressChip(double answeredProgress) {
+  Widget _buildAnsweredProgressChip(
+      double answeredProgress, int answeredCount) {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 7),
       decoration: BoxDecoration(
@@ -583,7 +522,7 @@ class _QuizPageState extends State<QuizPage> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            '${(_answeredCount / quizQuestions.length * 100).toInt()}% selesai',
+            '${(answeredCount / quizQuestions.length * 100).toInt()}% selesai',
             style: TextStyle(
               fontFamily: 'Poppins',
               fontSize: 10,
@@ -607,8 +546,7 @@ class _QuizPageState extends State<QuizPage> {
     );
   }
 
-  /// Card pertanyaan dengan gradient ungu
-  Widget _buildQuestionCard() {
+  Widget _buildQuestionCard(QuizState quizState) {
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(20),
@@ -631,14 +569,14 @@ class _QuizPageState extends State<QuizPage> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Container(
-            padding:
-                const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+            padding: const EdgeInsets.symmetric(
+                horizontal: 12, vertical: 4),
             decoration: BoxDecoration(
               color: Colors.white.withOpacity(0.2),
               borderRadius: BorderRadius.circular(20),
             ),
             child: Text(
-              'Soal ${_currentIndex + 1}',
+              'Soal ${quizState.currentIndex + 1}',
               style: const TextStyle(
                 fontFamily: 'Poppins',
                 fontSize: 12,
@@ -649,7 +587,7 @@ class _QuizPageState extends State<QuizPage> {
           ),
           const SizedBox(height: 16),
           Text(
-            _currentQuestion.question,
+            quizQuestions[quizState.currentIndex].question,
             style: const TextStyle(
               fontFamily: 'Poppins',
               fontSize: 18,
@@ -663,12 +601,10 @@ class _QuizPageState extends State<QuizPage> {
     );
   }
 
-  /// 4 pilihan jawaban untuk soal dengan index tertentu
-  /// Menerima [questionIndex] agar PageView tiap soal punya state sendiri
-  Widget _buildAnswerOptions(int questionIndex) {
+  Widget _buildAnswerOptions(int questionIndex, QuizState quizState) {
     const optionLabels = ['A', 'B', 'C', 'D'];
     final question = quizQuestions[questionIndex];
-    final selectedAnswer = _userAnswers[questionIndex];
+    final selectedAnswer = quizState.getAnswerFor(questionIndex);
 
     return Column(
       children: List.generate(
@@ -683,17 +619,15 @@ class _QuizPageState extends State<QuizPage> {
     );
   }
 
-  /// Dot indicator: overview semua soal
-  /// Abu = belum dijawab, ungu = sudah dijawab, panjang = soal aktif
-  Widget _buildQuestionDots() {
+  Widget _buildQuestionDots(QuizState quizState) {
     return Center(
       child: Wrap(
         spacing: 6,
         runSpacing: 6,
         alignment: WrapAlignment.center,
         children: List.generate(quizQuestions.length, (index) {
-          final isActive = index == _currentIndex;
-          final isAnswered = _userAnswers[index] != -1;
+          final isActive = index == quizState.currentIndex;
+          final isAnswered = quizState.getAnswerFor(index) != -1;
 
           return GestureDetector(
             onTap: () => _jumpToQuestion(index),
@@ -716,8 +650,7 @@ class _QuizPageState extends State<QuizPage> {
     );
   }
 
-  /// Footer: tombol Sebelumnya & Selanjutnya/Selesai
-  Widget _buildNavigationButtons() {
+  Widget _buildNavigationButtons(QuizState quizState) {
     return Container(
       padding: const EdgeInsets.fromLTRB(20, 12, 20, 20),
       decoration: BoxDecoration(
@@ -732,8 +665,7 @@ class _QuizPageState extends State<QuizPage> {
       ),
       child: Row(
         children: [
-          // Tombol Sebelumnya — hanya muncul jika bukan soal pertama
-          if (!_isFirstQuestion) ...[
+          if (!quizState.isFirstQuestion) ...[
             Expanded(
               flex: 1,
               child: OutlinedButton(
@@ -741,9 +673,7 @@ class _QuizPageState extends State<QuizPage> {
                 style: OutlinedButton.styleFrom(
                   foregroundColor: Colors.deepPurple,
                   side: BorderSide(
-                    color: Colors.deepPurple.shade200,
-                    width: 1.5,
-                  ),
+                      color: Colors.deepPurple.shade200, width: 1.5),
                   padding: const EdgeInsets.symmetric(vertical: 14),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(12),
@@ -768,14 +698,12 @@ class _QuizPageState extends State<QuizPage> {
             ),
             const SizedBox(width: 12),
           ],
-
-          // Tombol Selanjutnya / Selesai
           Expanded(
             flex: 2,
             child: ElevatedButton(
               onPressed: _goToNext,
               style: ElevatedButton.styleFrom(
-                backgroundColor: _isLastQuestion
+                backgroundColor: quizState.isLastQuestion
                     ? Colors.green.shade600
                     : Colors.deepPurple,
                 foregroundColor: Colors.white,
@@ -789,7 +717,7 @@ class _QuizPageState extends State<QuizPage> {
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   Text(
-                    _isLastQuestion ? 'Selesai' : 'Selanjutnya',
+                    quizState.isLastQuestion ? 'Selesai' : 'Selanjutnya',
                     style: const TextStyle(
                       fontFamily: 'Poppins',
                       fontSize: 15,
@@ -798,7 +726,7 @@ class _QuizPageState extends State<QuizPage> {
                   ),
                   const SizedBox(width: 4),
                   Icon(
-                    _isLastQuestion
+                    quizState.isLastQuestion
                         ? Icons.check_circle_outline
                         : Icons.arrow_forward_ios,
                     size: 16,

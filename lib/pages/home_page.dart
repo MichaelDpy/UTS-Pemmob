@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../widgets/custom_button.dart';
+import '../main.dart';
 import 'quiz_page.dart';
 
 /// Halaman utama aplikasi Quizify
@@ -78,8 +79,10 @@ class _HomePageState extends State<HomePage> {
       return;
     }
 
-    // Jika valid, navigasi ke QuizPage dengan membawa nama pengguna
+    // Jika valid, inisialisasi QuizState lalu navigasi ke QuizPage
     final name = _nameController.text.trim();
+    // Simpan nama ke QuizState agar bisa diakses di seluruh halaman
+    QuizStateProvider.of(context).quizState.startQuiz(name);
     Navigator.push(
       context,
       MaterialPageRoute(

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import '../data/questions.dart';
 import '../models/question.dart';
 import '../widgets/answer_option.dart';
@@ -17,13 +18,16 @@ class QuizPage extends StatefulWidget {
 
 class _QuizPageState extends State<QuizPage> {
   // ─── State Variables ───────────────────────────────────────────
-  
+
   /// Indeks pertanyaan yang sedang ditampilkan (0–9)
   int _currentIndex = 0;
 
   /// List jawaban pengguna untuk setiap pertanyaan.
   /// Nilai -1 = belum dijawab, 0–3 = indeks pilihan yang dipilih
   late List<int> _userAnswers;
+
+  /// Controller untuk scroll otomatis ke atas saat ganti soal
+  final ScrollController _scrollController = ScrollController();
 
   // ─── Getter Helpers ────────────────────────────────────────────
 
@@ -39,11 +43,103 @@ class _QuizPageState extends State<QuizPage> {
   /// Apakah ini pertanyaan terakhir
   bool get _isLastQuestion => _currentIndex == quizQuestions.length - 1;
 
+  /// Hitung jumlah soal yang sudah dijawab
+  int get _answeredCount =>
+      _userAnswers.where((answer) => answer != -1).length;
+
   @override
   void initState() {
     super.initState();
-    // Inisialisasi list jawaban dengan -1 (belum dijawab) untuk semua soal
+    // Inisialisasi semua jawaban dengan -1 (belum dijawab)
     _userAnswers = List.filled(quizQuestions.length, -1);
+  }
+
+  @override
+  void dispose() {
+    _scrollController.dispose();
+    super.dispose();
+  }
+
+  /// Scroll konten ke atas saat berpindah ke soal baru
+  void _scrollToTop() {
+    if (_scrollController.hasClients) {
+      _scrollController.animateTo(
+        0,
+        duration: const Duration(milliseconds: 300),
+        curve: Curves.easeOut,
+      );
+    }
+  }
+
+  /// Simpan pilihan jawaban pengguna
+  void _selectAnswer(int index) {
+    // Haptic feedback ringan saat memilih jawaban
+    HapticFeedback.selectionClick();
+    setState(() {
+      _userAnswers[_currentIndex] = index;
+    });
+  }
+
+  /// Pindah ke soal berikutnya dengan validasi
+  void _goToNext() {
+    if (!_isAnswered) {
+      ScaffoldMessenger.of(context).clearSnackBars();
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: const Row(
+            children: [
+              Icon(Icons.info_outline, color: Colors.white),
+              SizedBox(width: 12),
+              Text(
+                'Pilih jawaban terlebih dahulu!',
+                style: TextStyle(fontFamily: 'Poppins'),
+              ),
+            ],
+          ),
+          backgroundColor: Colors.orange.shade700,
+          behavior: SnackBarBehavior.floating,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(10),
+          ),
+          margin: const EdgeInsets.all(16),
+          duration: const Duration(seconds: 2),
+        ),
+      );
+      return;
+    }
+
+    if (_isLastQuestion) {
+      // TODO: Navigasi ke Result Page (commit 18-19)
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: const Text(
+            'Kuis selesai! Result page akan segera dibuat.',
+            style: TextStyle(fontFamily: 'Poppins'),
+          ),
+          backgroundColor: Colors.green.shade700,
+          behavior: SnackBarBehavior.floating,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(10),
+          ),
+          margin: const EdgeInsets.all(16),
+        ),
+      );
+    } else {
+      setState(() {
+        _currentIndex++;
+      });
+      _scrollToTop();
+    }
+  }
+
+  /// Pindah ke soal sebelumnya
+  void _goToPrevious() {
+    if (_currentIndex > 0) {
+      setState(() {
+        _currentIndex--;
+      });
+      _scrollToTop();
+    }
   }
 
   @override
@@ -52,18 +148,17 @@ class _QuizPageState extends State<QuizPage> {
 
     return Scaffold(
       backgroundColor: Colors.white,
-      // AppBar dengan nama pengguna dan tombol keluar
       appBar: AppBar(
         backgroundColor: Colors.white,
         elevation: 0,
         automaticallyImplyLeading: false,
         title: Row(
           children: [
+            // Avatar huruf pertama nama
             CircleAvatar(
               radius: 18,
               backgroundColor: Colors.deepPurple.shade100,
               child: Text(
-                // Ambil huruf pertama nama sebagai avatar
                 widget.username.isNotEmpty
                     ? widget.username[0].toUpperCase()
                     : 'Q',
@@ -77,21 +172,36 @@ class _QuizPageState extends State<QuizPage> {
             ),
             const SizedBox(width: 10),
             Expanded(
-              child: Text(
-                widget.username,
-                overflow: TextOverflow.ellipsis,
-                style: TextStyle(
-                  fontFamily: 'Poppins',
-                  fontSize: 16,
-                  fontWeight: FontWeight.w600,
-                  color: Colors.grey.shade800,
-                ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    widget.username,
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(
+                      fontFamily: 'Poppins',
+                      fontSize: 15,
+                      fontWeight: FontWeight.w600,
+                      color: Colors.grey.shade800,
+                    ),
+                  ),
+                  // Info progress: "X dari 10 dijawab"
+                  Text(
+                    '$_answeredCount dari ${quizQuestions.length} dijawab',
+                    style: TextStyle(
+                      fontFamily: 'Poppins',
+                      fontSize: 11,
+                      fontWeight: FontWeight.w400,
+                      color: Colors.grey.shade500,
+                    ),
+                  ),
+                ],
               ),
             ),
           ],
         ),
         actions: [
-          // Tombol keluar sementara (dialog akan ditambahkan di commit 17)
+          // Tombol keluar (dialog akan ditambahkan di commit 17)
           IconButton(
             onPressed: () => Navigator.pop(context),
             icon: Icon(Icons.close, color: Colors.grey.shade600),
@@ -103,12 +213,13 @@ class _QuizPageState extends State<QuizPage> {
       body: SafeArea(
         child: Column(
           children: [
-            // ── Header: Nomor Soal & Progress ──────────────────
+            // Header: progress bar & nomor soal
             _buildHeader(),
 
-            // ── Konten Utama: Pertanyaan & Pilihan ─────────────
+            // Konten utama: pertanyaan & pilihan jawaban
             Expanded(
               child: SingleChildScrollView(
+                controller: _scrollController,
                 padding: EdgeInsets.symmetric(
                   horizontal: size.width > 600 ? size.width * 0.1 : 20,
                   vertical: 16,
@@ -116,20 +227,39 @@ class _QuizPageState extends State<QuizPage> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    // Nomor dan teks pertanyaan
+                    // Card pertanyaan
                     _buildQuestionCard(),
 
-                    const SizedBox(height: 24),
+                    const SizedBox(height: 20),
+
+                    // Label "Pilih jawaban:"
+                    Padding(
+                      padding: const EdgeInsets.only(left: 4, bottom: 12),
+                      child: Text(
+                        'Pilih jawaban:',
+                        style: TextStyle(
+                          fontFamily: 'Poppins',
+                          fontSize: 14,
+                          fontWeight: FontWeight.w500,
+                          color: Colors.grey.shade600,
+                        ),
+                      ),
+                    ),
 
                     // Empat pilihan jawaban
                     _buildAnswerOptions(),
+
+                    // Indikator dot soal (overview semua soal)
+                    const SizedBox(height: 16),
+                    _buildQuestionDots(),
+                    const SizedBox(height: 8),
                   ],
                 ),
               ),
             ),
 
-            // ── Footer: Tombol Navigasi ─────────────────────────
-            _buildNavigationButtons(size),
+            // Footer: tombol navigasi
+            _buildNavigationButtons(),
           ],
         ),
       ),
@@ -138,7 +268,7 @@ class _QuizPageState extends State<QuizPage> {
 
   // ─── Widget Builders ───────────────────────────────────────────
 
-  /// Header yang menampilkan nomor soal dan progress bar
+  /// Header: nomor soal + progress bar + persentase
   Widget _buildHeader() {
     final progress = (_currentIndex + 1) / quizQuestions.length;
 
@@ -156,7 +286,6 @@ class _QuizPageState extends State<QuizPage> {
       ),
       child: Column(
         children: [
-          // Label nomor soal
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
@@ -169,7 +298,6 @@ class _QuizPageState extends State<QuizPage> {
                   color: Colors.grey.shade600,
                 ),
               ),
-              // Badge persentase progress
               Container(
                 padding:
                     const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
@@ -190,15 +318,20 @@ class _QuizPageState extends State<QuizPage> {
             ],
           ),
           const SizedBox(height: 10),
-          // Progress bar
-          ClipRRect(
-            borderRadius: BorderRadius.circular(8),
-            child: LinearProgressIndicator(
-              value: progress,
-              minHeight: 8,
-              backgroundColor: Colors.grey.shade200,
-              valueColor:
-                  const AlwaysStoppedAnimation<Color>(Colors.deepPurple),
+          // Progress bar dengan animasi
+          TweenAnimationBuilder<double>(
+            tween: Tween(begin: 0, end: progress),
+            duration: const Duration(milliseconds: 400),
+            builder: (context, value, _) => ClipRRect(
+              borderRadius: BorderRadius.circular(8),
+              child: LinearProgressIndicator(
+                value: value,
+                minHeight: 8,
+                backgroundColor: Colors.grey.shade200,
+                valueColor: const AlwaysStoppedAnimation<Color>(
+                  Colors.deepPurple,
+                ),
+              ),
             ),
           ),
         ],
@@ -206,7 +339,7 @@ class _QuizPageState extends State<QuizPage> {
     );
   }
 
-  /// Card pertanyaan
+  /// Card pertanyaan dengan gradient ungu
   Widget _buildQuestionCard() {
     return Container(
       width: double.infinity,
@@ -229,7 +362,7 @@ class _QuizPageState extends State<QuizPage> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Badge kategori soal
+          // Badge nomor soal
           Container(
             padding:
                 const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
@@ -264,9 +397,9 @@ class _QuizPageState extends State<QuizPage> {
     );
   }
 
-  /// Daftar 4 pilihan jawaban menggunakan AnswerOption reusable widget
+  /// 4 pilihan jawaban menggunakan AnswerOption widget
   Widget _buildAnswerOptions() {
-    final optionLabels = ['A', 'B', 'C', 'D'];
+    const optionLabels = ['A', 'B', 'C', 'D'];
     return Column(
       children: List.generate(
         _currentQuestion.options.length,
@@ -274,18 +407,56 @@ class _QuizPageState extends State<QuizPage> {
           label: optionLabels[index],
           text: _currentQuestion.options[index],
           isSelected: _currentAnswer == index,
-          onTap: () {
-            setState(() {
-              _userAnswers[_currentIndex] = index;
-            });
+          onTap: () => _selectAnswer(index),
+        ),
+      ),
+    );
+  }
+
+  /// Indikator dot untuk overview semua soal.
+  /// Dot penuh = sudah dijawab, dot kosong = belum dijawab, dot garis = aktif.
+  Widget _buildQuestionDots() {
+    return Center(
+      child: Wrap(
+        spacing: 6,
+        runSpacing: 6,
+        alignment: WrapAlignment.center,
+        children: List.generate(
+          quizQuestions.length,
+          (index) {
+            final isActive = index == _currentIndex;
+            final isAnswered = _userAnswers[index] != -1;
+
+            return GestureDetector(
+              // Tap dot untuk lompat ke soal tersebut
+              onTap: () {
+                setState(() {
+                  _currentIndex = index;
+                });
+                _scrollToTop();
+              },
+              child: AnimatedContainer(
+                duration: const Duration(milliseconds: 200),
+                width: isActive ? 24 : 10,
+                height: 10,
+                decoration: BoxDecoration(
+                  color: isActive
+                      ? Colors.deepPurple
+                      : isAnswered
+                          ? Colors.deepPurple.shade300
+                          : Colors.grey.shade300,
+                  borderRadius: BorderRadius.circular(5),
+                ),
+              ),
+            );
           },
         ),
       ),
     );
   }
 
-  /// Footer berisi tombol Sebelumnya dan Selanjutnya/Selesai
-  Widget _buildNavigationButtons(Size size) {
+  /// Footer: tombol Sebelumnya & Selanjutnya/Selesai
+  Widget _buildNavigationButtons() {
     return Container(
       padding: const EdgeInsets.fromLTRB(20, 12, 20, 20),
       decoration: BoxDecoration(
@@ -300,16 +471,12 @@ class _QuizPageState extends State<QuizPage> {
       ),
       child: Row(
         children: [
-          // Tombol Sebelumnya (hanya muncul bukan di soal pertama)
-          if (_currentIndex > 0)
+          // Tombol Sebelumnya (hanya muncul jika bukan soal pertama)
+          if (_currentIndex > 0) ...[
             Expanded(
               flex: 1,
               child: OutlinedButton(
-                onPressed: () {
-                  setState(() {
-                    _currentIndex--;
-                  });
-                },
+                onPressed: _goToPrevious,
                 style: OutlinedButton.styleFrom(
                   foregroundColor: Colors.deepPurple,
                   side: BorderSide(
@@ -338,65 +505,17 @@ class _QuizPageState extends State<QuizPage> {
                 ),
               ),
             ),
-
-          if (_currentIndex > 0) const SizedBox(width: 12),
+            const SizedBox(width: 12),
+          ],
 
           // Tombol Selanjutnya atau Selesai
           Expanded(
             flex: 2,
             child: ElevatedButton(
-              onPressed: () {
-                if (!_isAnswered) {
-                  // Validasi: harus pilih jawaban dulu
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(
-                      content: const Row(
-                        children: [
-                          Icon(Icons.info_outline, color: Colors.white),
-                          SizedBox(width: 12),
-                          Text(
-                            'Pilih jawaban terlebih dahulu!',
-                            style: TextStyle(fontFamily: 'Poppins'),
-                          ),
-                        ],
-                      ),
-                      backgroundColor: Colors.orange.shade700,
-                      behavior: SnackBarBehavior.floating,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(10),
-                      ),
-                      margin: const EdgeInsets.all(16),
-                      duration: const Duration(seconds: 2),
-                    ),
-                  );
-                  return;
-                }
-                if (_isLastQuestion) {
-                  // TODO: Navigasi ke Result Page (commit 16)
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(
-                      content: const Text(
-                        'Kuis selesai! Result page akan segera dibuat.',
-                        style: TextStyle(fontFamily: 'Poppins'),
-                      ),
-                      backgroundColor: Colors.green.shade700,
-                      behavior: SnackBarBehavior.floating,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(10),
-                      ),
-                      margin: const EdgeInsets.all(16),
-                    ),
-                  );
-                } else {
-                  setState(() {
-                    _currentIndex++;
-                  });
-                }
-              },
+              onPressed: _goToNext,
               style: ElevatedButton.styleFrom(
-                backgroundColor: _isLastQuestion
-                    ? Colors.green.shade600
-                    : Colors.deepPurple,
+                backgroundColor:
+                    _isLastQuestion ? Colors.green.shade600 : Colors.deepPurple,
                 foregroundColor: Colors.white,
                 padding: const EdgeInsets.symmetric(vertical: 14),
                 elevation: 2,

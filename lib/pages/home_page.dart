@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../widgets/custom_button.dart';
 
 /// Halaman utama aplikasi Quizify
 /// Menampilkan sambutan, logo, dan form untuk memulai kuis
@@ -364,31 +365,11 @@ class _HomePageState extends State<HomePage> {
                 
                 const SizedBox(height: 32),
                 
-                // Tombol Mulai Kuis (temporary - akan diganti dengan CustomButton nanti)
-                SizedBox(
-                  width: double.infinity,
-                  height: 56,
-                  child: ElevatedButton(
-                    onPressed: _startQuiz,
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.deepPurple,
-                      foregroundColor: Colors.white,
-                      elevation: 2,
-                      shadowColor: Colors.deepPurple.withOpacity(0.3),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                    ),
-                    child: Text(
-                      'Mulai Kuis',
-                      style: TextStyle(
-                        fontFamily: 'Poppins',
-                        fontSize: 18,
-                        fontWeight: FontWeight.w600,
-                        letterSpacing: 0.5,
-                      ),
-                    ),
-                  ),
+                // Tombol Mulai Kuis — menggunakan CustomButton reusable widget
+                CustomButton(
+                  label: 'Mulai Kuis',
+                  icon: Icons.play_arrow_rounded,
+                  onPressed: _startQuiz,
                 ),
                 
                 SizedBox(height: size.height * 0.08),

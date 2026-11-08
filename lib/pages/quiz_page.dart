@@ -101,6 +101,73 @@ class _QuizPageState extends State<QuizPage> {
 
   // ─── Dialogs & SnackBars ───────────────────────────────────────
 
+  void _showExitConfirmationDialog() {
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(20),
+        ),
+        title: const Row(
+          children: [
+            Icon(Icons.warning_amber_rounded, color: Colors.orange, size: 28),
+            SizedBox(width: 10),
+            Text(
+              'Keluar dari Kuis?',
+              style: TextStyle(
+                fontFamily: 'Poppins',
+                fontWeight: FontWeight.w600,
+                fontSize: 18,
+              ),
+            ),
+          ],
+        ),
+        content: Text(
+          'Progress kuis Anda akan hilang jika keluar sekarang. Apakah Anda yakin ingin keluar?',
+          style: TextStyle(
+            fontFamily: 'Poppins',
+            fontSize: 14,
+            color: Colors.grey.shade700,
+            height: 1.5,
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: Text(
+              'Lanjut Kuis',
+              style: TextStyle(
+                fontFamily: 'Poppins',
+                fontWeight: FontWeight.w600,
+                color: Colors.deepPurple,
+              ),
+            ),
+          ),
+          ElevatedButton(
+            onPressed: () {
+              Navigator.pop(ctx); // Tutup dialog
+              Navigator.pop(context); // Kembali ke HomePage
+            },
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.red.shade600,
+              foregroundColor: Colors.white,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(10),
+              ),
+            ),
+            child: const Text(
+              'Ya, Keluar',
+              style: TextStyle(
+                fontFamily: 'Poppins',
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
   void _showMustAnswerSnackBar() {
     ScaffoldMessenger.of(context).clearSnackBars();
     ScaffoldMessenger.of(context).showSnackBar(
@@ -235,7 +302,12 @@ class _QuizPageState extends State<QuizPage> {
     final quizState = QuizStateProvider.of(context).quizState;
     final size = MediaQuery.of(context).size;
 
-    return Scaffold(
+    return WillPopScope(
+      onWillPop: () async {
+        _showExitConfirmationDialog();
+        return false; // Mencegah pop otomatis
+      },
+      child: Scaffold(
       backgroundColor: Colors.white,
       appBar: _buildAppBar(quizState),
       body: SafeArea(
@@ -290,8 +362,8 @@ class _QuizPageState extends State<QuizPage> {
           ],
         ),
       ),
-    );
-  }
+    ); // Scaffold
+  } // WillPopScope
 
   // ─── Widget Builders ───────────────────────────────────────────
 
@@ -346,9 +418,9 @@ class _QuizPageState extends State<QuizPage> {
         ],
       ),
       actions: [
-        // Tombol keluar — dialog konfirmasi di commit 17
+        // Tombol keluar dengan konfirmasi
         IconButton(
-          onPressed: () => Navigator.pop(context),
+          onPressed: _showExitConfirmationDialog,
           icon: Icon(Icons.close, color: Colors.grey.shade600),
           tooltip: 'Keluar',
         ),

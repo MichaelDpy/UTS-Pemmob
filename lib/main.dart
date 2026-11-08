@@ -40,7 +40,7 @@ class _MyAppState extends State<MyApp> {
       toggleTheme: _toggleTheme,
       themeMode: _themeMode,
       child: MaterialApp(
-        title: 'Quizify - Interactive Quiz App',
+        title: 'Qu izify - Interactive Quiz App',
         debugShowCheckedModeBanner: false,
         themeMode: _themeMode,
         // Tema terang

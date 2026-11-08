@@ -4,6 +4,7 @@ import '../data/questions.dart';
 import '../models/question.dart';
 import '../widgets/answer_option.dart';
 import '../main.dart';
+import 'result_page.dart';
 
 /// Halaman kuis — menampilkan pertanyaan satu per satu.
 /// State kuis dikelola oleh QuizState yang hidup di MyApp,
@@ -57,8 +58,13 @@ class _QuizPageState extends State<QuizPage> {
       if (!quizState.allAnswered) {
         _showUnansweredDialog(quizState);
       } else {
-        // TODO: Navigasi ke ResultPage (commit 19)
-        _showQuizCompleteSnackBar();
+        // Navigasi ke ResultPage
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => ResultPage(username: widget.username),
+          ),
+        );
       }
     } else {
       quizState.goToNext();
@@ -168,7 +174,13 @@ class _QuizPageState extends State<QuizPage> {
           ElevatedButton(
             onPressed: () {
               Navigator.pop(ctx);
-              _showQuizCompleteSnackBar();
+              // Navigasi ke ResultPage
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => ResultPage(username: widget.username),
+                ),
+              );
             },
             style: ElevatedButton.styleFrom(
               backgroundColor: Colors.deepPurple,

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../widgets/custom_button.dart';
+import 'quiz_page.dart';
 
 /// Halaman utama aplikasi Quizify
 /// Menampilkan sambutan, logo, dan form untuk memulai kuis
@@ -77,31 +78,12 @@ class _HomePageState extends State<HomePage> {
       return;
     }
 
-    // Jika valid, tampilkan SnackBar sukses sementara
-    // TODO: Nanti akan diganti dengan navigasi ke QuizPage
+    // Jika valid, navigasi ke QuizPage dengan membawa nama pengguna
     final name = _nameController.text.trim();
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Row(
-          children: [
-            const Icon(Icons.check_circle_outline, color: Colors.white),
-            const SizedBox(width: 12),
-            Text(
-              'Halo, $name! Kuis siap dimulai.',
-              style: const TextStyle(
-                fontFamily: 'Poppins',
-                fontWeight: FontWeight.w500,
-              ),
-            ),
-          ],
-        ),
-        backgroundColor: Colors.green.shade600,
-        behavior: SnackBarBehavior.floating,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(10),
-        ),
-        margin: const EdgeInsets.all(16),
-        duration: const Duration(seconds: 2),
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => QuizPage(username: name),
       ),
     );
   }

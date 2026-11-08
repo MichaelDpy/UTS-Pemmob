@@ -6,9 +6,9 @@ Aplikasi kuis pilihan ganda interaktif berbasis Flutter untuk menguji pengetahua
 
 ## 📋 Identitas Mahasiswa
 
-- **Nama**: [Michael Alexius Depari]
-- **NIM**: [241401119]
-- **Lab**: [PM 4]
+- **Nama**: Michael Alexius Depari
+- **NIM**: 241401119
+- **Lab**: PM 4
 
 ---
 
@@ -22,7 +22,6 @@ Quizify adalah aplikasi kuis pilihan ganda yang memungkinkan pengguna memasukkan
 
 ### Fitur-Fitur yang Tersedia
 
-#### ✅ Kriteria Wajib (10/10)
 1. **StatelessWidget & StatefulWidget**
    - Menggunakan StatefulWidget untuk halaman dengan state (HomePage, QuizPage)
    - Menggunakan StatelessWidget untuk halaman display (ResultPage, ReviewPage)
@@ -70,7 +69,7 @@ Quizify adalah aplikasi kuis pilihan ganda yang memungkinkan pengguna memasukkan
     - Smooth animations
     - Professional dan polished
 
-#### 🎁 Bonus Features (2/2)
+#### Fitur Lainnya
 1. **Dark Mode & Light Mode**
    - Toggle tema di HomePage
    - Theme-aware colors di semua halaman

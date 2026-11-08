@@ -3,6 +3,7 @@ import '../data/questions.dart';
 import '../models/question.dart';
 import '../widgets/answer_option.dart';
 import '../main.dart';
+import '../utils/responsive_helper.dart';
 
 /// Halaman review jawaban — menampilkan semua soal dengan jawaban user,
 /// jawaban yang benar, dan penjelasan untuk setiap soal.
@@ -12,25 +13,28 @@ class ReviewPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final quizState = QuizStateProvider.of(context).quizState;
-    final size = MediaQuery.of(context).size;
 
     return Scaffold(
-      backgroundColor: Colors.grey.shade50,
       appBar: _buildAppBar(context, quizState),
       body: SafeArea(
-        child: ListView.builder(
-          padding: EdgeInsets.symmetric(
-            horizontal: size.width > 600 ? size.width * 0.1 : 16,
-            vertical: 16,
+        child: ResponsiveHelper.centerWithMaxWidth(
+          context: context,
+          maxWidth: 900,
+          child: ListView.builder(
+            padding: EdgeInsets.symmetric(
+              horizontal: ResponsiveHelper.horizontalPadding(context),
+              vertical: ResponsiveHelper.verticalPadding(context),
+            ),
+            itemCount: quizQuestions.length,
+            itemBuilder: (context, index) {
+              return _buildQuestionReviewCard(
+                index,
+                quizQuestions[index],
+                quizState.getAnswerFor(index),
+                context,
+              );
+            },
           ),
-          itemCount: quizQuestions.length,
-          itemBuilder: (context, index) {
-            return _buildQuestionReviewCard(
-              index,
-              quizQuestions[index],
-              quizState.getAnswerFor(index),
-            );
-          },
         ),
       ),
     );
@@ -77,12 +81,13 @@ class ReviewPage extends StatelessWidget {
     int index,
     Question question,
     int userAnswer,
+    BuildContext context,
   ) {
     final isCorrect = question.isCorrect(userAnswer);
     const optionLabels = ['A', 'B', 'C', 'D'];
 
     return Container(
-      margin: const EdgeInsets.only(bottom: 16),
+      margin: EdgeInsets.only(bottom: ResponsiveHelper.spacing(context)),
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(16),

@@ -4,6 +4,7 @@ import '../data/questions.dart';
 import '../models/question.dart';
 import '../widgets/answer_option.dart';
 import '../main.dart';
+import '../utils/responsive_helper.dart';
 import 'result_page.dart';
 
 /// Halaman kuis — menampilkan pertanyaan satu per satu.
@@ -308,7 +309,6 @@ class _QuizPageState extends State<QuizPage> {
         return false; // Mencegah pop otomatis
       },
       child: Scaffold(
-      backgroundColor: Colors.white,
       appBar: _buildAppBar(quizState),
       body: SafeArea(
         child: Column(
@@ -324,20 +324,22 @@ class _QuizPageState extends State<QuizPage> {
                   setState(() {});
                 },
                 itemBuilder: (context, index) {
-                  return SingleChildScrollView(
-                    padding: EdgeInsets.symmetric(
-                      horizontal:
-                          size.width > 600 ? size.width * 0.1 : 20,
-                      vertical: 16,
-                    ),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        _buildQuestionCard(quizState),
-                        const SizedBox(height: 20),
-                        Padding(
-                          padding:
-                              const EdgeInsets.only(left: 4, bottom: 12),
+                  return ResponsiveHelper.centerWithMaxWidth(
+                    context: context,
+                    maxWidth: ResponsiveHelper.quizCardMaxWidth(context),
+                    child: SingleChildScrollView(
+                      padding: EdgeInsets.symmetric(
+                        horizontal: ResponsiveHelper.horizontalPadding(context),
+                        vertical: ResponsiveHelper.verticalPadding(context),
+                      ),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          _buildQuestionCard(quizState),
+                          SizedBox(height: ResponsiveHelper.spacing(context)),
+                          Padding(
+                            padding:
+                                const EdgeInsets.only(left: 4, bottom: 12),
                           child: Text(
                             'Pilih jawaban:',
                             style: TextStyle(

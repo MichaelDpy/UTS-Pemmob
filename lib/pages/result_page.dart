@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../data/questions.dart';
 import '../main.dart';
 import '../widgets/custom_button.dart';
+import '../utils/responsive_helper.dart';
 import 'home_page.dart';
 import 'quiz_page.dart';
 import 'review_page.dart';
@@ -49,39 +50,41 @@ class ResultPage extends StatelessWidget {
     final scoreColor = _getScoreColor(score);
 
     return Scaffold(
-      backgroundColor: Colors.white,
       // WillPopScope mencegah tombol Back fisik kembali ke QuizPage
       body: WillPopScope(
         onWillPop: () async => false,
         child: SafeArea(
-          child: SingleChildScrollView(
-            padding: EdgeInsets.symmetric(
-              horizontal: size.width > 600 ? size.width * 0.1 : 24,
-              vertical: 20,
-            ),
-            child: Column(
-              children: [
-                // Header
-                _buildHeader(username),
+          child: ResponsiveHelper.centerWithMaxWidth(
+            context: context,
+            maxWidth: 800,
+            child: SingleChildScrollView(
+              padding: EdgeInsets.symmetric(
+                horizontal: ResponsiveHelper.horizontalPadding(context),
+                vertical: ResponsiveHelper.verticalPadding(context),
+              ),
+              child: Column(
+                children: [
+                  // Header
+                  _buildHeader(username),
 
-                SizedBox(height: size.height * 0.04),
+                  SizedBox(height: ResponsiveHelper.spacing(context) * 2),
 
-                // Lingkaran skor besar
-                _buildScoreCircle(score, scoreColor),
+                  // Lingkaran skor besar
+                  _buildScoreCircle(score, scoreColor),
 
-                const SizedBox(height: 32),
+                  SizedBox(height: ResponsiveHelper.spacing(context) * 2),
 
-                // 3 card statistik
-                _buildStatsRow(correct, wrong, percentage),
+                  // 3 card statistik
+                  _buildStatsRow(correct, wrong, percentage, context),
 
-                const SizedBox(height: 28),
+                  SizedBox(height: ResponsiveHelper.spacing(context) * 1.5),
 
-                // Pesan detail
-                _buildDetailMessage(score),
+                  // Pesan detail
+                  _buildDetailMessage(score),
 
-                const SizedBox(height: 32),
+                  SizedBox(height: ResponsiveHelper.spacing(context) * 2),
 
-                // Tombol-tombol aksi
+                  // Tombol-tombol aksi
                 _buildActionButtons(context, quizState),
 
                 const SizedBox(height: 20),
@@ -191,7 +194,38 @@ class ResultPage extends StatelessWidget {
     );
   }
 
-  Widget _buildStatsRow(int correct, int wrong, String percentage) {
+  Widget _buildStatsRow(int correct, int wrong, String percentage, BuildContext context) {
+    // Untuk mobile: vertical stack, tablet+: horizontal row
+    if (ResponsiveHelper.isMobile(context) && ResponsiveHelper.isPortrait(context)) {
+      return Column(
+        children: [
+          _buildStatCard(
+            label: 'Benar',
+            value: '$correct',
+            icon: Icons.check_circle_outline,
+            color: Colors.green.shade600,
+            context: context,
+          ),
+          SizedBox(height: ResponsiveHelper.spacing(context)),
+          _buildStatCard(
+            label: 'Salah',
+            value: '$wrong',
+            icon: Icons.cancel_outlined,
+            color: Colors.red.shade500,
+            context: context,
+          ),
+          SizedBox(height: ResponsiveHelper.spacing(context)),
+          _buildStatCard(
+            label: 'Akurasi',
+            value: '$percentage%',
+            icon: Icons.percent,
+            color: Colors.blue.shade600,
+            context: context,
+          ),
+        ],
+      );
+    }
+    
     return Row(
       children: [
         Expanded(
@@ -200,24 +234,27 @@ class ResultPage extends StatelessWidget {
             value: '$correct',
             icon: Icons.check_circle_outline,
             color: Colors.green.shade600,
+            context: context,
           ),
         ),
-        const SizedBox(width: 12),
+        SizedBox(width: ResponsiveHelper.spacing(context)),
         Expanded(
           child: _buildStatCard(
             label: 'Salah',
             value: '$wrong',
             icon: Icons.cancel_outlined,
             color: Colors.red.shade500,
+            context: context,
           ),
         ),
-        const SizedBox(width: 12),
+        SizedBox(width: ResponsiveHelper.spacing(context)),
         Expanded(
           child: _buildStatCard(
             label: 'Akurasi',
             value: '$percentage%',
             icon: Icons.percent,
             color: Colors.blue.shade600,
+            context: context,
           ),
         ),
       ],
@@ -229,9 +266,13 @@ class ResultPage extends StatelessWidget {
     required String value,
     required IconData icon,
     required Color color,
+    required BuildContext context,
   }) {
     return Container(
-      padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 10),
+      padding: EdgeInsets.symmetric(
+        vertical: ResponsiveHelper.cardPadding(context),
+        horizontal: ResponsiveHelper.cardPadding(context) * 0.6,
+      ),
       decoration: BoxDecoration(
         color: color.withOpacity(0.08),
         borderRadius: BorderRadius.circular(16),

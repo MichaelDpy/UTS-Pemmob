@@ -388,60 +388,94 @@ class _QuizPageState extends State<QuizPage> {
     );
   }
 
-  /// Header: label nomor soal + progress bar + persentase
+  /// Header: label nomor soal + progress bar + stats dijawab/belum
   Widget _buildHeader() {
+    // Persentase berdasarkan posisi soal saat ini
     final progress = (_currentIndex + 1) / quizQuestions.length;
+    // Persentase berdasarkan soal yang sudah dijawab
+    final answeredProgress = _answeredCount / quizQuestions.length;
 
     return Container(
-      padding: const EdgeInsets.fromLTRB(20, 8, 20, 16),
+      padding: const EdgeInsets.fromLTRB(20, 10, 20, 16),
       decoration: BoxDecoration(
         color: Colors.white,
         boxShadow: [
           BoxShadow(
             color: Colors.grey.shade100,
-            blurRadius: 4,
+            blurRadius: 6,
             offset: const Offset(0, 2),
           ),
         ],
       ),
       child: Column(
         children: [
+          // ── Baris 1: Nomor soal + Badge persentase ──────────
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Text(
-                'Pertanyaan ${_currentIndex + 1} dari ${quizQuestions.length}',
-                style: TextStyle(
-                  fontFamily: 'Poppins',
-                  fontSize: 14,
-                  fontWeight: FontWeight.w500,
-                  color: Colors.grey.shade600,
+              // Nomor soal aktif
+              RichText(
+                text: TextSpan(
+                  children: [
+                    TextSpan(
+                      text: 'Soal ',
+                      style: TextStyle(
+                        fontFamily: 'Poppins',
+                        fontSize: 14,
+                        fontWeight: FontWeight.w400,
+                        color: Colors.grey.shade600,
+                      ),
+                    ),
+                    TextSpan(
+                      text: '${_currentIndex + 1}',
+                      style: const TextStyle(
+                        fontFamily: 'Poppins',
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.deepPurple,
+                      ),
+                    ),
+                    TextSpan(
+                      text: ' / ${quizQuestions.length}',
+                      style: TextStyle(
+                        fontFamily: 'Poppins',
+                        fontSize: 14,
+                        fontWeight: FontWeight.w400,
+                        color: Colors.grey.shade500,
+                      ),
+                    ),
+                  ],
                 ),
               ),
+
+              // Badge % progress posisi soal
               Container(
                 padding: const EdgeInsets.symmetric(
-                    horizontal: 10, vertical: 4),
+                    horizontal: 12, vertical: 5),
                 decoration: BoxDecoration(
-                  color: Colors.deepPurple.shade50,
+                  color: Colors.deepPurple,
                   borderRadius: BorderRadius.circular(20),
                 ),
                 child: Text(
                   '${(progress * 100).toInt()}%',
-                  style: TextStyle(
+                  style: const TextStyle(
                     fontFamily: 'Poppins',
                     fontSize: 12,
-                    fontWeight: FontWeight.w600,
-                    color: Colors.deepPurple,
+                    fontWeight: FontWeight.w700,
+                    color: Colors.white,
                   ),
                 ),
               ),
             ],
           ),
+
           const SizedBox(height: 10),
-          // Progress bar dengan animasi tween
+
+          // ── Baris 2: Progress bar posisi soal ───────────────
           TweenAnimationBuilder<double>(
             tween: Tween(begin: 0, end: progress),
             duration: const Duration(milliseconds: 400),
+            curve: Curves.easeOut,
             builder: (context, value, _) => ClipRRect(
               borderRadius: BorderRadius.circular(8),
               child: LinearProgressIndicator(
@@ -451,6 +485,121 @@ class _QuizPageState extends State<QuizPage> {
                 valueColor: const AlwaysStoppedAnimation<Color>(
                     Colors.deepPurple),
               ),
+            ),
+          ),
+
+          const SizedBox(height: 12),
+
+          // ── Baris 3: Stats dijawab / belum dijawab ──────────
+          Row(
+            children: [
+              // Stat: Dijawab
+              Expanded(
+                child: _buildStatChip(
+                  icon: Icons.check_circle_outline,
+                  label: 'Dijawab',
+                  value: _answeredCount,
+                  color: Colors.green.shade600,
+                ),
+              ),
+              const SizedBox(width: 8),
+              // Stat: Belum dijawab
+              Expanded(
+                child: _buildStatChip(
+                  icon: Icons.radio_button_unchecked,
+                  label: 'Belum',
+                  value: _unansweredCount,
+                  color: Colors.orange.shade600,
+                ),
+              ),
+              const SizedBox(width: 8),
+              // Stat: Progress kecil dijawab
+              Expanded(
+                child: _buildAnsweredProgressChip(answeredProgress),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  /// Chip statistik kecil (dijawab / belum dijawab)
+  Widget _buildStatChip({
+    required IconData icon,
+    required String label,
+    required int value,
+    required Color color,
+  }) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 7),
+      decoration: BoxDecoration(
+        color: color.withOpacity(0.08),
+        borderRadius: BorderRadius.circular(10),
+        border: Border.all(color: color.withOpacity(0.2)),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(icon, size: 14, color: color),
+          const SizedBox(width: 5),
+          Text(
+            '$value',
+            style: TextStyle(
+              fontFamily: 'Poppins',
+              fontSize: 13,
+              fontWeight: FontWeight.bold,
+              color: color,
+            ),
+          ),
+          const SizedBox(width: 4),
+          Flexible(
+            child: Text(
+              label,
+              overflow: TextOverflow.ellipsis,
+              style: TextStyle(
+                fontFamily: 'Poppins',
+                fontSize: 11,
+                fontWeight: FontWeight.w400,
+                color: color.withOpacity(0.8),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  /// Chip progress mini untuk soal yang sudah dijawab
+  Widget _buildAnsweredProgressChip(double answeredProgress) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 7),
+      decoration: BoxDecoration(
+        color: Colors.deepPurple.shade50,
+        borderRadius: BorderRadius.circular(10),
+        border: Border.all(color: Colors.deepPurple.shade100),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            '${(_answeredCount / quizQuestions.length * 100).toInt()}% selesai',
+            style: TextStyle(
+              fontFamily: 'Poppins',
+              fontSize: 10,
+              fontWeight: FontWeight.w500,
+              color: Colors.deepPurple.shade700,
+            ),
+          ),
+          const SizedBox(height: 4),
+          ClipRRect(
+            borderRadius: BorderRadius.circular(4),
+            child: LinearProgressIndicator(
+              value: answeredProgress,
+              minHeight: 4,
+              backgroundColor: Colors.deepPurple.shade100,
+              valueColor: AlwaysStoppedAnimation<Color>(
+                  Colors.deepPurple.shade400),
             ),
           ),
         ],

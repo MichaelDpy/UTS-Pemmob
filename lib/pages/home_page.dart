@@ -12,7 +12,99 @@ class HomePage extends StatefulWidget {
 class _HomePageState extends State<HomePage> {
   // TextEditingController untuk mengelola input nama
   final TextEditingController _nameController = TextEditingController();
-  
+
+  // Menyimpan pesan error untuk ditampilkan di bawah TextField
+  String? _nameError;
+
+  /// Validasi nama pengguna sebelum memulai kuis
+  /// Mengembalikan true jika valid, false jika tidak valid
+  bool _validateName() {
+    final name = _nameController.text.trim();
+
+    if (name.isEmpty) {
+      setState(() {
+        _nameError = 'Nama tidak boleh kosong';
+      });
+      return false;
+    }
+
+    if (name.length < 2) {
+      setState(() {
+        _nameError = 'Nama minimal 2 karakter';
+      });
+      return false;
+    }
+
+    // Nama valid, hapus pesan error
+    setState(() {
+      _nameError = null;
+    });
+    return true;
+  }
+
+  /// Fungsi yang dipanggil ketika tombol Mulai Kuis ditekan
+  void _startQuiz() {
+    // Tutup keyboard jika masih terbuka
+    FocusScope.of(context).unfocus();
+
+    if (!_validateName()) {
+      // Tampilkan SnackBar jika validasi gagal
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Row(
+            children: [
+              const Icon(Icons.warning_amber_rounded, color: Colors.white),
+              const SizedBox(width: 12),
+              Text(
+                _nameError ?? 'Nama tidak boleh kosong',
+                style: const TextStyle(
+                  fontFamily: 'Poppins',
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+            ],
+          ),
+          backgroundColor: Colors.red.shade600,
+          behavior: SnackBarBehavior.floating,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(10),
+          ),
+          margin: const EdgeInsets.all(16),
+          duration: const Duration(seconds: 2),
+        ),
+      );
+      return;
+    }
+
+    // Jika valid, tampilkan SnackBar sukses sementara
+    // TODO: Nanti akan diganti dengan navigasi ke QuizPage
+    final name = _nameController.text.trim();
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Row(
+          children: [
+            const Icon(Icons.check_circle_outline, color: Colors.white),
+            const SizedBox(width: 12),
+            Text(
+              'Halo, $name! Kuis siap dimulai.',
+              style: const TextStyle(
+                fontFamily: 'Poppins',
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+          ],
+        ),
+        backgroundColor: Colors.green.shade600,
+        behavior: SnackBarBehavior.floating,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(10),
+        ),
+        margin: const EdgeInsets.all(16),
+        duration: const Duration(seconds: 2),
+      ),
+    );
+  }
+
   @override
   void dispose() {
     // Membersihkan controller saat widget di-dispose
@@ -181,6 +273,14 @@ class _HomePageState extends State<HomePage> {
                     ),
                     TextField(
                       controller: _nameController,
+                      // Hapus error saat pengguna mulai mengetik
+                      onChanged: (value) {
+                        if (_nameError != null) {
+                          setState(() {
+                            _nameError = null;
+                          });
+                        }
+                      },
                       decoration: InputDecoration(
                         hintText: 'Nama lengkap Anda',
                         hintStyle: TextStyle(
@@ -191,7 +291,16 @@ class _HomePageState extends State<HomePage> {
                         ),
                         prefixIcon: Icon(
                           Icons.person_outline,
-                          color: Colors.deepPurple,
+                          color: _nameError != null
+                              ? Colors.red
+                              : Colors.deepPurple,
+                        ),
+                        // Menampilkan pesan error di bawah TextField
+                        errorText: _nameError,
+                        errorStyle: const TextStyle(
+                          fontFamily: 'Poppins',
+                          fontSize: 12,
+                          fontWeight: FontWeight.w400,
                         ),
                         filled: true,
                         fillColor: Colors.grey.shade50,
@@ -205,14 +314,32 @@ class _HomePageState extends State<HomePage> {
                         enabledBorder: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(12),
                           borderSide: BorderSide(
-                            color: Colors.grey.shade300,
+                            color: _nameError != null
+                                ? Colors.red
+                                : Colors.grey.shade300,
                             width: 1.5,
                           ),
                         ),
                         focusedBorder: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(12),
                           borderSide: BorderSide(
-                            color: Colors.deepPurple,
+                            color: _nameError != null
+                                ? Colors.red
+                                : Colors.deepPurple,
+                            width: 2,
+                          ),
+                        ),
+                        errorBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(12),
+                          borderSide: const BorderSide(
+                            color: Colors.red,
+                            width: 1.5,
+                          ),
+                        ),
+                        focusedErrorBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(12),
+                          borderSide: const BorderSide(
+                            color: Colors.red,
                             width: 2,
                           ),
                         ),
@@ -229,6 +356,8 @@ class _HomePageState extends State<HomePage> {
                       ),
                       textCapitalization: TextCapitalization.words,
                       keyboardType: TextInputType.name,
+                      // Memulai kuis saat pengguna tekan done di keyboard
+                      onSubmitted: (_) => _startQuiz(),
                     ),
                   ],
                 ),
@@ -240,11 +369,7 @@ class _HomePageState extends State<HomePage> {
                   width: double.infinity,
                   height: 56,
                   child: ElevatedButton(
-                    onPressed: () {
-                      // TODO: Implementasi navigasi ke Quiz Page
-                      // Untuk sementara hanya print nama
-                      print('Nama: ${_nameController.text}');
-                    },
+                    onPressed: _startQuiz,
                     style: ElevatedButton.styleFrom(
                       backgroundColor: Colors.deepPurple,
                       foregroundColor: Colors.white,

@@ -106,6 +106,10 @@ class QuizState extends ChangeNotifier {
 
   /// Simpan jawaban untuk soal yang aktif
   void selectAnswer(int answerIndex) {
+    // Validasi answer index
+    if (answerIndex < 0 || answerIndex >= 4) {
+      return; // Invalid answer index
+    }
     _userAnswers[_currentIndex] = answerIndex;
     notifyListeners();
   }
@@ -128,10 +132,12 @@ class QuizState extends ChangeNotifier {
 
   /// Lompat ke soal tertentu
   void jumpToQuestion(int index) {
-    if (index >= 0 && index < quizQuestions.length) {
-      _currentIndex = index;
-      notifyListeners();
+    // Validasi index
+    if (index < 0 || index >= quizQuestions.length) {
+      return; // Invalid index, do nothing
     }
+    _currentIndex = index;
+    notifyListeners();
   }
 
   /// Reset seluruh state kuis (untuk Ulangi Kuis)

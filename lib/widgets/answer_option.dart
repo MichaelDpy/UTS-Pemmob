@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
 /// Widget untuk menampilkan satu pilihan jawaban kuis.
 /// Digunakan di QuizPage (mode pilih) dan ReviewPage (mode review).
@@ -42,9 +43,22 @@ class AnswerOption extends StatelessWidget {
 
     // Wrap dengan RepaintBoundary untuk isolasi repaint
     return RepaintBoundary(
-      child: GestureDetector(
-      onTap: onTap,
-      child: AnimatedContainer(
+      child: Semantics(
+        button: true,
+        selected: isSelected,
+        enabled: onTap != null,
+        label: 'Pilihan $label: $text',
+        hint: mode == AnswerMode.selecting 
+            ? (isSelected ? 'Terpilih' : 'Tekan untuk memilih')
+            : (isCorrect ? 'Jawaban benar' : 'Jawaban salah'),
+        child: GestureDetector(
+          onTap: () {
+            if (onTap != null && mode == AnswerMode.selecting) {
+              HapticFeedback.selectionClick();
+              onTap!();
+            }
+          },
+          child: AnimatedContainer(
         // Animasi transisi warna saat dipilih
         duration: const Duration(milliseconds: 200),
         margin: const EdgeInsets.only(bottom: 12),
@@ -108,9 +122,10 @@ class AnswerOption extends StatelessWidget {
             _buildTrailingIcon(colors),
           ],
         ),
-      ),
-      ), // RepaintBoundary
-    );
+        ), // AnimatedContainer
+      ), // GestureDetector
+      ), // Semantics
+    ); // RepaintBoundary
   }
 
   /// Menentukan ikon di sebelah kanan berdasarkan mode dan status

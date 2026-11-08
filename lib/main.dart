@@ -2,8 +2,18 @@ import 'package:flutter/material.dart';
 import 'pages/home_page.dart';
 import 'state/quiz_state.dart';
 import 'theme/app_theme.dart';
+import 'utils/error_handler.dart';
 
 void main() {
+  // Catch errors di Flutter framework
+  FlutterError.onError = (details) {
+    ErrorHandler.logError(
+      'Flutter Error',
+      error: details.exception,
+      stackTrace: details.stack,
+    );
+  };
+
   runApp(const MyApp());
 }
 
@@ -46,7 +56,9 @@ class _MyAppState extends State<MyApp> {
         themeMode: _themeMode,
         theme: AppTheme.lightTheme,
         darkTheme: AppTheme.darkTheme,
-        home: const HomePage(),
+        home: ErrorHandler.errorBoundary(
+          child: const HomePage(),
+        ),
       ),
     );
   }

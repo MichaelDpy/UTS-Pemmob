@@ -34,6 +34,17 @@ class CustomButton extends StatelessWidget {
     // Gunakan warna dari parameter, atau fallback ke primary color dari theme
     final buttonColor = color ?? Theme.of(context).colorScheme.primary;
 
+    // Wrap dengan Semantics untuk accessibility
+    return Semantics(
+      button: true,
+      enabled: onPressed != null,
+      label: label,
+      hint: onPressed != null ? 'Tekan untuk $label' : 'Tombol tidak aktif',
+      child: _buildButton(buttonColor, context),
+    );
+  }
+
+  Widget _buildButton(Color buttonColor, BuildContext context) {
     // Tampilkan tombol sesuai tipe
     if (type == ButtonType.secondary) {
       return _buildSecondaryButton(buttonColor, context);
